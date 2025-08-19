@@ -6,49 +6,49 @@
 
 @layer base {
   :root {
-    /* Gaming Dark Theme */
-    --background: 220 13% 8%;
-    --foreground: 210 40% 95%;
+    /* Dark Gaming Theme */
+    --background: 220 15% 6%;
+    --foreground: 210 20% 90%;
 
-    --card: 220 13% 10%;
-    --card-foreground: 210 40% 95%;
+    --card: 220 15% 8%;
+    --card-foreground: 210 20% 90%;
 
-    --popover: 220 13% 10%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 220 15% 8%;
+    --popover-foreground: 210 20% 90%;
 
-    /* Neon Gaming Colors */
-    --primary: 280 100% 65%;
-    --primary-foreground: 220 13% 8%;
-    --primary-glow: 280 100% 75%;
+    /* Muted Gaming Colors */
+    --primary: 210 15% 70%;
+    --primary-foreground: 220 15% 6%;
+    --primary-glow: 210 20% 80%;
 
-    --secondary: 200 100% 60%;
-    --secondary-foreground: 220 13% 8%;
-    --secondary-glow: 200 100% 70%;
+    --secondary: 220 10% 40%;
+    --secondary-foreground: 210 20% 90%;
+    --secondary-glow: 220 15% 50%;
 
-    --muted: 220 13% 15%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 215 10% 55%;
 
-    --accent: 160 100% 50%;
-    --accent-foreground: 220 13% 8%;
-    --accent-glow: 160 100% 60%;
+    --accent: 25 85% 60%;
+    --accent-foreground: 220 15% 6%;
+    --accent-glow: 25 85% 70%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 210 20% 90%;
 
-    --border: 220 13% 20%;
-    --input: 220 13% 15%;
-    --ring: 280 100% 65%;
+    --border: 220 15% 18%;
+    --input: 220 15% 12%;
+    --ring: 210 15% 70%;
 
-    /* Gaming Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(280 100% 65%), hsl(200 100% 60%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 13% 8%) 0%, hsl(280 100% 10%) 50%, hsl(220 13% 8%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(220 13% 12%), hsl(220 13% 8%));
-    --gradient-gaming: linear-gradient(90deg, hsl(280 100% 65%) 0%, hsl(200 100% 60%) 50%, hsl(160 100% 50%) 100%);
+    /* Dark Gaming Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 15% 70%), hsl(220 10% 40%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 15% 6%) 0%, hsl(220 15% 10%) 50%, hsl(220 15% 6%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 15% 10%), hsl(220 15% 6%));
+    --gradient-gaming: linear-gradient(90deg, hsl(210 15% 70%) 0%, hsl(220 10% 40%) 50%, hsl(25 85% 60%) 100%);
 
-    /* Gaming Shadows */
-    --shadow-neon: 0 0 20px hsl(280 100% 65% / 0.5);
-    --shadow-card: 0 4px 20px hsl(220 13% 5% / 0.8);
-    --shadow-intense: 0 0 40px hsl(280 100% 65% / 0.3);
+    /* Subtle Gaming Shadows */
+    --shadow-neon: 0 0 15px hsl(210 15% 70% / 0.3);
+    --shadow-card: 0 4px 20px hsl(220 15% 3% / 0.8);
+    --shadow-intense: 0 0 25px hsl(210 15% 70% / 0.2);
 
     /* Gaming Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -160,10 +160,6 @@
 
   .hero-section {
     background: var(--gradient-hero);
-    background-image: url('/src/assets/hero-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-blend-mode: overlay;
     position: relative;
     overflow: hidden;
   }
@@ -175,7 +171,33 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, hsl(var(--accent) / 0.06) 0%, transparent 50%);
+  }
+
+  .floating-icon {
+    position: absolute;
+    opacity: 0.4;
+    animation: float 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .floating-icon:nth-child(2n) {
+    animation-delay: -2s;
+    animation-direction: reverse;
+  }
+
+  .floating-icon:nth-child(3n) {
+    animation-delay: -4s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-20px) rotate(180deg);
+    }
   }
 }
 

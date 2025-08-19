@@ -12,7 +12,12 @@ import {
   Crown,
   ArrowRight,
   GamepadIcon,
-  Zap
+  Zap,
+  Headphones,
+  Monitor,
+  Keyboard,
+  Mouse,
+  Disc3
 } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 
@@ -137,10 +142,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Animated Background Elements */}
+        {/* Floating Gaming Icons */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-glow-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-glow-pulse" style={{ animationDelay: '1s' }}></div>
+          <GamepadIcon className="floating-icon w-12 h-12 text-primary/20 absolute top-20 left-16" />
+          <Headphones className="floating-icon w-10 h-10 text-accent/20 absolute top-40 right-20" />
+          <Monitor className="floating-icon w-14 h-14 text-secondary/15 absolute bottom-32 left-32" />
+          <Keyboard className="floating-icon w-11 h-11 text-primary/15 absolute top-64 left-1/4" />
+          <Mouse className="floating-icon w-8 h-8 text-accent/25 absolute bottom-48 right-16" />
+          <Disc3 className="floating-icon w-9 h-9 text-secondary/20 absolute top-32 right-1/3" />
+          <GamepadIcon className="floating-icon w-8 h-8 text-primary/10 absolute bottom-20 left-1/2" />
+          <Headphones className="floating-icon w-13 h-13 text-accent/15 absolute top-56 right-1/4" />
         </div>
       </section>
 
