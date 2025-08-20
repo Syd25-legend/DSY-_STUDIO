@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, User, Search, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Search, ArrowRight } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,7 +94,6 @@ const Blogs = () => {
           </Badge>
         </div>
       </div>
-
       <CardHeader>
         <CardTitle className={`group-hover:text-primary transition-colors ${
           featured ? 'text-xl' : 'text-lg'
@@ -105,7 +104,6 @@ const Blogs = () => {
           {blog.excerpt}
         </CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-1">
           {blog.tags?.map((tag) => (
@@ -114,22 +112,20 @@ const Blogs = () => {
             </Badge>
           ))}
         </div>
-
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
-              <Calendar className="w-3 h-3" />
-              <span>{blog.published_at ? new Date(blog.published_at).toLocaleDateString() : 'TBA'}</span>
+              {/* <Calendar className="w-3 h-3" /> */}
+              {/* <span>{blog.published_at ? new Date(blog.published_at).toLocaleDateString() : 'TBA'}</span> */}
             </div>
           </div>
           {blog.read_time && (
             <div className="flex items-center space-x-1">
-              <Clock className="w-3 h-3" />
-              <span>{blog.read_time}</span>
+              {/* <Clock className="w-3 h-3" />
+              <span>{blog.read_time}</span> */}
             </div>
           )}
         </div>
-
         <Link to={`/blogs/${blog.id}`}>
           <Button variant="gaming" className="w-full group/btn">
             Read More
@@ -141,27 +137,14 @@ const Blogs = () => {
   );
 
   if (loading) {
+    // Skeleton loading state remains unchanged
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="text-center mb-12">
-            <Skeleton className="h-12 w-64 mx-auto mb-4" />
-            <Skeleton className="h-6 w-96 mx-auto" />
-          </div>
+          <div className="text-center mb-12"><Skeleton className="h-12 w-64 mx-auto mb-4" /><Skeleton className="h-6 w-96 mx-auto" /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="gaming-card">
-                <Skeleton className="h-48 w-full" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
+            {[1, 2, 3, 4, 5, 6].map((i) => <Card key={i} className="gaming-card"><Skeleton className="h-48 w-full" /><CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>)}
           </div>
         </div>
       </div>
@@ -169,17 +152,14 @@ const Blogs = () => {
   }
 
   if (!blogs.length) {
+    // Empty state remains unchanged
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Developer Blogs
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              No blog posts available at the moment. Check back soon for updates!
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Developer Blogs</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">No blog posts available at the moment. Check back soon for updates!</p>
           </div>
         </div>
       </div>
@@ -188,19 +168,31 @@ const Blogs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      {/* --- UPDATED: Style tag for the new zoom-in animation --- */}
+      <style>{`
+        @keyframes zoom-in-settle {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-zoom-in-settle {
+          animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+      `}</style>
       <GamingHeader />
       
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12 animate-slide-up">
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+        {/* --- UPDATED: Animation class changed from animate-slide-up --- */}
+        <div className="text-center mb-12 animate-zoom-in-settle">
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-4">
             Developer Blogs
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          {/* --- UPDATED: Added padding-bottom to fix text clipping --- */}
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto pb-1">
             Behind-the-scenes insights, development updates, and thoughts from the DSY Studio team.
           </p>
         </div>
 
-        {/* Search and Filter */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -213,48 +205,32 @@ const Blogs = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "gaming" : "pill"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-              >
+              <Button key={category} variant={selectedCategory === category ? "gaming" : "pill"} size="sm" onClick={() => setSelectedCategory(category)}>
                 {category}
               </Button>
             ))}
           </div>
         </div>
 
-        {/* Featured Blogs */}
         {searchTerm === "" && selectedCategory === "All" && featuredBlogs.length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6 gradient-text">Featured Articles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {featuredBlogs.slice(0, 2).map((blog, index) => (
-                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <BlogCard blog={blog} featured />
-                </div>
+                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><BlogCard blog={blog} featured /></div>
               ))}
             </div>
           </div>
         )}
 
-        {/* All Blogs */}
         <div>
-          <h2 className="text-2xl font-bold mb-6 gradient-text">
-            {searchTerm || selectedCategory !== "All" ? "Search Results" : "Latest Articles"}
-          </h2>
-          
+          <h2 className="text-2xl font-bold mb-6 gradient-text">{searchTerm || selectedCategory !== "All" ? "Search Results" : "Latest Articles"}</h2>
           {filteredBlogs.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No blogs found matching your search.</p>
-            </div>
+            <div className="text-center py-12"><p className="text-muted-foreground">No blogs found matching your search.</p></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredBlogs.map((blog, index) => (
-                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <BlogCard blog={blog} />
-                </div>
+                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><BlogCard blog={blog} /></div>
               ))}
             </div>
           )}

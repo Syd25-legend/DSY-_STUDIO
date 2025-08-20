@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // --- NEW: Imported useCallback
 import { useParams, Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Eye, MessageCircle, ArrowLeft, Pin, Heart } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks/useAuth";
+import { Calendar, Eye, MessageCircle, ArrowLeft, Pin, Heart, PlusCircle } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 interface Insight {
   id: string;
@@ -36,63 +39,87 @@ interface Comment {
 }
 
 const InsightDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
   const [insight, setInsight] = useState<Insight | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentsLoading, setCommentsLoading] = useState(true);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
+
+  // --- UPDATED: Wrapped fetchComments in useCallback to fix dependency warning ---
+  const fetchComments = useCallback(async () => {
+    if (!id) return;
+    setCommentsLoading(true);
+    const { data, error } = await supabase
+      .from('comments')
+      .select(`*, profiles (username, avatar_url)`)
+      .eq('post_id', id)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+    } else {
+      // --- FIXED: Replaced 'any[]' with the specific 'Comment[]' type ---
+      setComments((data as Comment[]) || []);
+    }
+    setCommentsLoading(false);
+  }, [id]);
+
 
   useEffect(() => {
-    const fetchInsight = async () => {
+    const fetchInsightAndComments = async () => {
       if (!id) return;
-      
-      const { data, error } = await supabase
-        .from('insights')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      setLoading(true);
 
-      if (error) {
-        console.error('Error fetching insight:', error);
+      const { data: insightData, error: insightError } = await supabase
+        .from('insights').select('*').eq('id', id).single();
+
+      if (insightError) {
+        console.error('Error fetching insight:', insightError);
       } else {
-        setInsight(data);
-        // Increment view count
-        if (data) {
-          await supabase
-            .from('insights')
-            .update({ views: data.views + 1 })
-            .eq('id', id);
+        setInsight(insightData);
+        if (insightData) {
+          await supabase.from('insights').update({ views: insightData.views + 1 }).eq('id', id);
         }
       }
       setLoading(false);
-    };
-
-    const fetchComments = async () => {
-      if (!id) return;
       
-      const { data, error } = await supabase
-        .from('comments')
-        .select(`
-          *,
-          profiles (
-            username,
-            avatar_url
-          )
-        `)
-        .eq('post_id', id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching comments:', error);
-      } else {
-        setComments(data || []);
-      }
-      setCommentsLoading(false);
+      await fetchComments();
     };
+    
+    // --- UPDATED: Added fetchComments to the dependency array ---
+    fetchInsightAndComments();
+  }, [id, fetchComments]);
 
-    fetchInsight();
-    fetchComments();
-  }, [id]);
+  const handleCommentSubmit = async () => {
+    if (!newComment.trim()) {
+      toast({ title: "Comment cannot be empty.", variant: "destructive" });
+      return;
+    }
+    if (!user) {
+      toast({ title: "You must be logged in to comment.", variant: "destructive" });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('comments').insert({ post_id: id, user_id: user.id, content: newComment.trim() });
+      if (error) throw error;
+      toast({ title: "Comment posted successfully!" });
+      setNewComment("");
+      setShowCommentForm(false);
+      await fetchComments();
+    } catch (error) {
+      console.error("Error posting comment:", error);
+      toast({ title: "Failed to post comment.", description: "Please try again.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
@@ -107,9 +134,7 @@ const InsightDetail = () => {
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
-    }
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
     return num.toString();
   };
 
@@ -117,16 +142,7 @@ const InsightDetail = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <Skeleton className="h-64 w-full rounded-lg" />
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-32 w-full" />
-            </div>
-          </div>
-        </div>
+        <div className="container mx-auto px-4 pt-32 pb-16"><Skeleton className="h-96 w-full max-w-4xl mx-auto" /></div>
       </div>
     );
   }
@@ -135,17 +151,9 @@ const InsightDetail = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Discussion Not Found</h1>
-            <p className="text-muted-foreground mb-8">The discussion you're looking for doesn't exist.</p>
-            <Link to="/insights">
-              <Button variant="gaming">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Insights
-              </Button>
-            </Link>
-          </div>
+        <div className="container mx-auto px-4 pt-32 text-center">
+          <h1 className="text-2xl font-bold mb-4">Discussion Not Found</h1>
+          <Link to="/insights"><Button variant="gaming"><ArrowLeft className="mr-2 h-4 w-4" />Back to Insights</Button></Link>
         </div>
       </div>
     );
@@ -154,137 +162,53 @@ const InsightDetail = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <GamingHeader />
-      
       <div className="container mx-auto px-4 pt-32 pb-16">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="mb-8">
-            <Link to="/insights">
-              <Button variant="outline" className="mb-6">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Insights
-              </Button>
-            </Link>
-
-            {insight.media_url && (
-              <div className="relative overflow-hidden rounded-lg mb-8">
-                <img
-                  src={insight.media_url}
-                  alt={insight.title}
-                  className="w-full h-64 md:h-96 object-cover"
-                />
-              </div>
-            )}
-
+            <Link to="/insights"><Button variant="outline" className="mb-6"><ArrowLeft className="mr-2 h-4 w-4" />Back to Insights</Button></Link>
+            {insight.media_url && <div className="relative overflow-hidden rounded-lg mb-8"><img src={insight.media_url} alt={insight.title} className="w-full h-64 md:h-96 object-cover" /></div>}
             <div className="space-y-4">
-              <div className="flex items-center space-x-2 flex-wrap">
-                <Badge className={getCategoryColor(insight.category)}>
-                  {insight.category}
-                </Badge>
-                {insight.is_pinned && (
-                  <Badge variant="outline" className="border-accent text-accent">
-                    <Pin className="w-3 h-3 mr-1" />
-                    Pinned
-                  </Badge>
-                )}
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-bold gradient-text">
-                {insight.title}
-              </h1>
-
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-1">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(insight.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Eye className="w-4 h-4" />
-                    <span>{formatNumber(insight.views)} views</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Heart className="w-4 h-4" />
-                    <span>{formatNumber(insight.likes)} likes</span>
-                  </div>
+              <div className="flex items-center space-x-2 flex-wrap"><Badge className={getCategoryColor(insight.category)}>{insight.category}</Badge>{insight.is_pinned && <Badge variant="outline" className="border-accent text-accent"><Pin className="w-3 h-3 mr-1" />Pinned</Badge>}</div>
+              <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-2">{insight.title}</h1>
+              <div className="flex items-center justify-between flex-wrap gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-1"><Calendar className="w-4 h-4" /><span>{new Date(insight.created_at).toLocaleDateString()}</span></div>
+                  <div className="flex items-center space-x-1"><Eye className="w-4 h-4" /><span>{formatNumber(insight.views)} views</span></div>
+                  <div className="flex items-center space-x-1"><Heart className="w-4 h-4" /><span>{formatNumber(insight.likes)} likes</span></div>
                 </div>
               </div>
-
-              {insight.tags && insight.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {insight.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              {insight.tags && insight.tags.length > 0 && <div className="flex flex-wrap gap-2">{insight.tags.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}</div>}
             </div>
           </div>
-
-          {/* Content */}
-          <Card className="gaming-card mb-8">
-            <CardContent className="pt-8">
-              <div className="prose prose-lg max-w-none">
-                <div className="whitespace-pre-wrap text-foreground">
-                  {insight.content || "Content coming soon..."}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Comments Section */}
+          <Card className="gaming-card mb-8"><CardContent className="pt-8"><div className="prose prose-lg max-w-none"><div className="whitespace-pre-wrap text-foreground">{insight.content || "Content coming soon..."}</div></div></CardContent></Card>
           <Card className="gaming-card">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageCircle className="mr-2 h-5 w-5" />
-                Comments ({comments.length})
-              </CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="flex items-center justify-between"><span><MessageCircle className="mr-2 h-5 w-5 inline-block" />Comments ({comments.length})</span></CardTitle></CardHeader>
             <CardContent>
               {commentsLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex space-x-4">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-16 w-full" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="flex space-x-4"><Skeleton className="h-10 w-10 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-12 w-full" /></div></div>)}</div>
               ) : comments.length > 0 ? (
                 <div className="space-y-6">
                   {comments.map((comment) => (
-                    <div key={comment.id} className="border-b border-border/50 pb-4 last:border-b-0">
-                      <div className="flex items-start space-x-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={comment.profiles?.avatar_url} />
-                          <AvatarFallback>
-                            {comment.profiles?.username?.slice(0, 2).toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="font-semibold">
-                              {comment.profiles?.username || 'Anonymous'}
-                            </span>
-                            <span className="text-sm text-muted-foreground">
-                              {new Date(comment.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="text-foreground">{comment.content}</p>
-                        </div>
-                      </div>
-                    </div>
+                    <div key={comment.id} className="border-b border-border/50 pb-4 last:border-b-0"><div className="flex items-start space-x-3"><Avatar className="w-10 h-10"><AvatarImage src={comment.profiles?.avatar_url} /><AvatarFallback>{comment.profiles?.username?.slice(0, 2).toUpperCase() || 'U'}</AvatarFallback></Avatar><div className="flex-1"><div className="flex items-center space-x-2 mb-2"><span className="font-semibold">{comment.profiles?.username || 'Anonymous'}</span><span className="text-sm text-muted-foreground">{new Date(comment.created_at).toLocaleDateString()}</span></div><p className="text-foreground whitespace-pre-wrap">{comment.content}</p></div></div></div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-8">
-                  No comments yet. Be the first to share your thoughts!
-                </p>
+                <p className="text-muted-foreground text-center py-8">No comments yet. Be the first to share your thoughts!</p>
               )}
+              <div className="mt-8 pt-6 border-t border-border/50">
+                {user ? (
+                  showCommentForm ? (
+                    <div className="space-y-4">
+                      <Textarea placeholder="Write your comment..." value={newComment} onChange={(e) => setNewComment(e.target.value)} className="min-h-[100px] border-primary/20 focus:border-primary/40" />
+                      <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setShowCommentForm(false)} disabled={isSubmitting}>Cancel</Button><Button variant="gaming" onClick={handleCommentSubmit} disabled={isSubmitting}>{isSubmitting ? "Posting..." : "Post Comment"}</Button></div>
+                    </div>
+                  ) : (
+                    <Button variant="outline" className="w-full" onClick={() => setShowCommentForm(true)}><PlusCircle className="mr-2 h-4 w-4" />Add a comment</Button>
+                  )
+                ) : (
+                  <p className="text-center text-muted-foreground"><Link to="/auth" className="text-primary hover:underline">Log in</Link> to join the discussion.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

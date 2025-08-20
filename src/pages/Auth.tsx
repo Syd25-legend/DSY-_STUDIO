@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Crown, Mail, Lock, User, Github } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Crown, Mail, Lock, User } from "lucide-react"; // Removed unused icons
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const location = useLocation();
+  const [isSignUp, setIsSignUp] = useState(location.state?.showSignUp || false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -19,11 +19,10 @@ const Auth = () => {
     username: ""
   });
 
-  const { user, signUp, signIn } = useAuth();
+  const { user, signUp, signIn } = useAuth(); // Removed signInWithGoogle
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (user) {
       navigate('/');
@@ -42,6 +41,7 @@ const Auth = () => {
             description: "Passwords do not match",
             variant: "destructive"
           });
+          setLoading(false);
           return;
         }
 
@@ -57,6 +57,7 @@ const Auth = () => {
             title: "Success",
             description: "Please check your email to confirm your account",
           });
+          setIsSignUp(false);
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
@@ -85,13 +86,6 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleAuth = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Google authentication will be available soon",
-    });
-  };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -104,18 +98,16 @@ const Auth = () => {
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20" />
-        
         <div className="relative z-10 flex flex-col justify-center px-12 text-center">
           <div className="mb-8">
             <div className="w-20 h-20 bg-gradient-primary rounded-2xl mx-auto mb-6 flex items-center justify-center">
-              <Crown className="w-10 h-10 text-primary-foreground" />
+              <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-16 h-16" />
             </div>
             <h1 className="text-4xl font-bold gradient-text mb-4">DSY Studio</h1>
             <p className="text-xl text-muted-foreground mb-8">
               Immersive Gaming Experiences
             </p>
           </div>
-
           <div className="space-y-6">
             <div className="gaming-card p-6 text-left">
               <h3 className="text-lg font-semibold text-primary mb-2">Antim Sawari</h3>
@@ -123,7 +115,6 @@ const Auth = () => {
                 Our latest psychological horror masterpiece that will keep you on the edge of your seat.
               </p>
             </div>
-            
             <div className="gaming-card p-6 text-left">
               <h3 className="text-lg font-semibold text-secondary mb-2">Community Driven</h3>
               <p className="text-sm text-muted-foreground">
@@ -139,11 +130,10 @@ const Auth = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8 lg:hidden">
             <div className="w-16 h-16 bg-gradient-primary rounded-xl mx-auto mb-4 flex items-center justify-center">
-              <Crown className="w-8 h-8 text-primary-foreground" />
+              <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-16 h-16" />
             </div>
             <h1 className="text-2xl font-bold gradient-text">DSY Studio</h1>
           </div>
-
           <Card className="gaming-card">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">
@@ -156,25 +146,15 @@ const Auth = () => {
                 }
               </CardDescription>
             </CardHeader>
-
             <CardContent className="space-y-6">
-              <Button 
-                variant="outline" 
-                className="w-full border-primary/20 hover:border-primary/40"
-                onClick={handleGoogleAuth}
-              >
-                <Github className="mr-2 h-4 w-4" />
-                Continue with Google
-              </Button>
+              {/* Replaced Google Button with this text */}
+              <p className="text-center text-sm text-muted-foreground pt-2">
+                {isSignUp
+                  ? "Join our community of creators and players."
+                  : "Welcome back to the DSY Studio community."}
+              </p>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
+              {/* Removed "Or continue with" separator */}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignUp && (
@@ -195,7 +175,6 @@ const Auth = () => {
                     </div>
                   </div>
                 )}
-
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
@@ -212,7 +191,6 @@ const Auth = () => {
                     />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -229,7 +207,6 @@ const Auth = () => {
                     />
                   </div>
                 </div>
-
                 {isSignUp && (
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -248,12 +225,10 @@ const Auth = () => {
                     </div>
                   </div>
                 )}
-
                 <Button type="submit" variant="gaming" className="w-full" size="lg" disabled={loading}>
                   {loading ? "Please wait..." : (isSignUp ? "Create Account" : "Sign In")}
                 </Button>
               </form>
-
               <div className="text-center">
                 <button
                   type="button"
@@ -266,7 +241,6 @@ const Auth = () => {
                   }
                 </button>
               </div>
-
               <div className="text-center">
                 <Link 
                   to="/" 

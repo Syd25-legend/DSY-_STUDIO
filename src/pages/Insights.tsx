@@ -4,14 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MessageCircle, 
   Users, 
-  Calendar, 
   Search, 
   TrendingUp, 
-  Clock,
   ArrowRight,
   Pin,
   Eye
@@ -19,6 +16,7 @@ import {
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth"; // --- 1. IMPORT useAuth HOOK ---
 
 interface Insight {
   id: string;
@@ -36,6 +34,7 @@ interface Insight {
 }
 
 const Insights = () => {
+  const { user } = useAuth(); // --- 2. GET USER STATE FROM THE HOOK ---
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,9 +92,7 @@ const Insights = () => {
   };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
-    }
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
     return num.toString();
   };
 
@@ -104,66 +101,26 @@ const Insights = () => {
       <CardHeader>
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center space-x-2">
-            <Badge className={getCategoryColor(insight.category)}>
-              {insight.category}
-            </Badge>
-            {showPin && insight.is_pinned && (
-              <Badge variant="outline" className="border-accent text-accent">
-                <Pin className="w-3 h-3 mr-1" />
-                Pinned
-              </Badge>
-            )}
-            {insight.likes > 10 && (
-              <Badge variant="outline" className="border-primary text-primary">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                Popular
-              </Badge>
-            )}
+            <Badge className={getCategoryColor(insight.category)}>{insight.category}</Badge>
+            {showPin && insight.is_pinned && <Badge variant="outline" className="border-accent text-accent"><Pin className="w-3 h-3 mr-1" />Pinned</Badge>}
+            {insight.likes > 10 && <Badge variant="outline" className="border-primary text-primary"><TrendingUp className="w-3 h-3 mr-1" />Popular</Badge>}
           </div>
         </div>
-        
-        <CardTitle className="group-hover:text-primary transition-colors line-clamp-2">
-          {insight.title}
-        </CardTitle>
-        <CardDescription className="line-clamp-2">
-          {insight.content?.substring(0, 150)}...
-        </CardDescription>
+        <CardTitle className="group-hover:text-primary transition-colors line-clamp-2">{insight.title}</CardTitle>
+        <CardDescription className="line-clamp-2">{insight.content?.substring(0, 150)}...</CardDescription>
       </CardHeader>
-
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-1">
-          {insight.tags?.map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
+          {insight.tags?.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}
         </div>
-
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {new Date(insight.created_at).toLocaleDateString()}
-          </div>
-        </div>
-
+        <div className="flex items-center justify-between"><div className="text-sm text-muted-foreground">{new Date(insight.created_at).toLocaleDateString()}</div></div>
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{formatNumber(insight.views)}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <TrendingUp className="w-4 h-4" />
-              <span>{formatNumber(insight.likes)}</span>
-            </div>
+            {/* <div className="flex items-center space-x-1"><Eye className="w-4 h-4" /><span>{formatNumber(insight.views)}</span></div> */}
+            {/* <div className="flex items-center space-x-1"><TrendingUp className="w-4 h-4" /><span>{formatNumber(insight.likes)}</span></div> */}
           </div>
         </div>
-
-        <Link to={`/insights/${insight.id}`}>
-          <Button variant="gaming" className="w-full group/btn">
-            View Discussion
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-          </Button>
-        </Link>
+        <Link to={`/insights/${insight.id}`}><Button variant="gaming" className="w-full group/btn">View Discussion<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" /></Button></Link>
       </CardContent>
     </Card>
   );
@@ -173,23 +130,9 @@ const Insights = () => {
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="text-center mb-12">
-            <Skeleton className="h-12 w-64 mx-auto mb-4" />
-            <Skeleton className="h-6 w-96 mx-auto" />
-          </div>
+          <div className="text-center mb-12"><Skeleton className="h-12 w-64 mx-auto mb-4" /><Skeleton className="h-6 w-96 mx-auto" /></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="gaming-card">
-                <Skeleton className="h-48 w-full" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
+            {[1, 2, 3].map((i) => <Card key={i} className="gaming-card"><Skeleton className="h-48 w-full" /><CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-10 w-full mt-2" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>)}
           </div>
         </div>
       </div>
@@ -202,12 +145,8 @@ const Insights = () => {
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
-              Community Insights
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              No discussions available at the moment. Check back soon for community insights!
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Community Insights</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">No discussions available at the moment. Check back soon for community insights!</p>
           </div>
         </div>
       </div>
@@ -216,116 +155,81 @@ const Insights = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <style>{`
+        @keyframes zoom-in-settle {
+          0% { transform: scale(0.5); opacity: 0; }
+          70% { transform: scale(1.05); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-zoom-in-settle {
+          animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+      `}</style>
       <GamingHeader />
       
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12 animate-slide-up">
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+        <div className="text-center mb-12 animate-zoom-in-settle">
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-4">
             Community Insights
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto pb-1">
             Join discussions, share insights, and connect with fellow gamers and developers.
           </p>
         </div>
 
-        {/* Search and Filter */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search discussions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-primary/20 focus:border-primary/40"
-            />
+            <Input placeholder="Search discussions..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 border-primary/20 focus:border-primary/40" />
           </div>
           <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "gaming" : "pill"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </Button>
-            ))}
+            {categories.map((category) => <Button key={category} variant={selectedCategory === category ? "gaming" : "pill"} size="sm" onClick={() => setSelectedCategory(category)}>{category}</Button>)}
           </div>
         </div>
 
-        {/* Pinned Topics */}
         {searchTerm === "" && selectedCategory === "All" && pinnedInsights.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center">
-              <Pin className="mr-2 h-6 w-6" />
-              Pinned Discussions
-            </h2>
+            <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center"><Pin className="mr-2 h-6 w-6" />Pinned Discussions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pinnedInsights.map((insight, index) => (
-                <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <InsightCard insight={insight} showPin />
-                </div>
-              ))}
+              {pinnedInsights.map((insight, index) => <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><InsightCard insight={insight} showPin /></div>)}
             </div>
           </div>
         )}
 
-        {/* Popular Topics */}
         {searchTerm === "" && selectedCategory === "All" && popularInsights.length > 0 && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center">
-              <TrendingUp className="mr-2 h-6 w-6" />
-              Popular Discussions
-            </h2>
+            <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center"><TrendingUp className="mr-2 h-6 w-6" />Popular Discussions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {popularInsights.slice(0, 3).map((insight, index) => (
-                <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <InsightCard insight={insight} />
-                </div>
-              ))}
+              {popularInsights.slice(0, 3).map((insight, index) => <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><InsightCard insight={insight} /></div>)}
             </div>
           </div>
         )}
 
-        {/* All Topics */}
         <div>
-          <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center">
-            <MessageCircle className="mr-2 h-6 w-6" />
-            {searchTerm || selectedCategory !== "All" ? "Search Results" : "All Discussions"}
-          </h2>
-          
+          <h2 className="text-2xl font-bold mb-6 gradient-text flex items-center"><MessageCircle className="mr-2 h-6 w-6" />{searchTerm || selectedCategory !== "All" ? "Search Results" : "All Discussions"}</h2>
           {filteredInsights.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No discussions found matching your search.</p>
-            </div>
+            <div className="text-center py-12"><p className="text-muted-foreground">No discussions found matching your search.</p></div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredInsights.map((insight, index) => (
-                <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <InsightCard insight={insight} />
-                </div>
-              ))}
+              {filteredInsights.map((insight, index) => <div key={insight.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><InsightCard insight={insight} /></div>)}
             </div>
           )}
         </div>
 
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <Card className="gaming-card max-w-lg mx-auto">
-            <CardContent className="pt-6">
-              <Users className="w-12 h-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-bold mb-2">Join the Conversation</h3>
-              <p className="text-muted-foreground mb-4">
-                Create an account to start discussions, share insights, and connect with the community.
-              </p>
-              <Link to="/auth">
-                <Button variant="gaming" size="lg">
-                  Get Started
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+        {/* --- 3. WRAP THE CARD IN A CONDITION --- */}
+        {/* This section will only be displayed if the user is NOT logged in */}
+        {!user && (
+          <div className="text-center mt-16">
+            <Card className="gaming-card max-w-lg mx-auto">
+              <CardContent className="pt-6">
+                <Users className="w-12 h-12 mx-auto mb-4 text-primary" />
+                <h3 className="text-xl font-bold mb-2">Join the Conversation</h3>
+                <p className="text-muted-foreground mb-4">Create an account to start discussions, share insights, and connect with the community.</p>
+                <Link to="/auth"><Button variant="gaming" size="lg">Get Started</Button></Link>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );
