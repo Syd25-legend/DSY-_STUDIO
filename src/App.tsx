@@ -17,6 +17,7 @@ import Insights from "./pages/Insights";
 import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
 
+
 const queryClient = new QueryClient();
 
 // --- 3. CREATE THE PROTECTED ROUTE COMPONENT ---

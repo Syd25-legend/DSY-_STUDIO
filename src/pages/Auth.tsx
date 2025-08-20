@@ -8,6 +8,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
+
 const Auth = () => {
   const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(location.state?.showSignUp || false);
