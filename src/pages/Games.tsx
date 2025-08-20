@@ -6,76 +6,52 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Star, Clock, Users } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// CHANGES FOR AUTH AND DATABASE HERE - Replace with actual data fetching from Supabase
-const mockGames = [
-  {
-    id: 1,
-    title: "Antim Sawari",
-    description: "A psychological horror masterpiece that will test your sanity and courage.",
-    genre: "Horror",
-    status: "Released",
-    releaseDate: "2024-03-15",
-    rating: 4.8,
-    players: "Single Player",
-    image: "/api/placeholder/400/250",
-    featured: true,
-    tags: ["Horror", "Psychological", "Atmospheric", "Story Rich"]
-  },
-  {
-    id: 2,
-    title: "Neon Runners",
-    description: "Fast-paced cyberpunk racing through neon-lit cities.",
-    genre: "Racing",
-    status: "In Development",
-    releaseDate: "2024-08-20",
-    rating: 0,
-    players: "Multiplayer",
-    image: "/api/placeholder/400/250",
-    featured: true,
-    tags: ["Racing", "Cyberpunk", "Multiplayer", "Fast-Paced"]
-  },
-  {
-    id: 3,
-    title: "Mystic Realms",
-    description: "Explore magical worlds filled with ancient mysteries.",
-    genre: "Adventure",
-    status: "Coming Soon",
-    releaseDate: "2024-12-10",
-    rating: 0,
-    players: "Single Player",
-    image: "/api/placeholder/400/250",
-    featured: false,
-    tags: ["Adventure", "Fantasy", "Exploration", "Magic"]
-  },
-  {
-    id: 4,
-    title: "Steel Warriors",
-    description: "Tactical mech combat in a post-apocalyptic world.",
-    genre: "Strategy",
-    status: "Early Access",
-    releaseDate: "2024-01-05",
-    rating: 4.2,
-    players: "Multiplayer",
-    image: "/api/placeholder/400/250",
-    featured: false,
-    tags: ["Strategy", "Mech", "Tactical", "Post-Apocalyptic"]
-  }
-];
+interface Game {
+  id: string;
+  title: string;
+  description: string;
+  genre: string;
+  status: string;
+  releaseDate: string;
+  rating: number;
+  image: string;
+  featured: boolean;
+  tags: string[];
+  platforms: string[];
+  developer: string;
+  price: string;
+  media: string[];
+  fullStory: string;
+  systemRequirements: any;
+}
 
 const Games = () => {
-  const [games, setGames] = useState(mockGames);
-  const [loading, setLoading] = useState(false);
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // CHANGES FOR AUTH AND DATABASE HERE - Replace with actual data fetching
   useEffect(() => {
     const fetchGames = async () => {
-      setLoading(true);
-      // Simulate API call - replace with Supabase query
-      setTimeout(() => {
-        setGames(mockGames);
+      try {
+        const { data, error } = await supabase
+          .from('games')
+          .select('*')
+          .order('featured', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching games:', error);
+          setGames([]);
+        } else {
+          setGames(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching games:', error);
+        setGames([]);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchGames();
@@ -99,11 +75,11 @@ const Games = () => {
     }
   };
 
-  const GameCard = ({ game }: { game: typeof mockGames[0] }) => (
+  const GameCard = ({ game }: { game: Game }) => (
     <Card className="gaming-card group overflow-hidden">
       <div className="relative overflow-hidden">
         <img
-          src={game.image}
+          src={game.image || "/api/placeholder/400/250"}
           alt={game.title}
           className="w-full h-48 object-cover transition-transform group-hover:scale-105"
         />
@@ -136,12 +112,12 @@ const Games = () => {
 
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-1">
-          {game.tags.slice(0, 3).map((tag) => (
+          {game.tags?.slice(0, 3).map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
           ))}
-          {game.tags.length > 3 && (
+          {game.tags && game.tags.length > 3 && (
             <Badge variant="secondary" className="text-xs">
               +{game.tags.length - 3}
             </Badge>
@@ -151,11 +127,11 @@ const Games = () => {
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center space-x-1">
             <Calendar className="w-3 h-3" />
-            <span>{new Date(game.releaseDate).toLocaleDateString()}</span>
+            <span>{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString() : 'TBA'}</span>
           </div>
           <div className="flex items-center space-x-1">
             <Users className="w-3 h-3" />
-            <span>{game.players}</span>
+            <span>{game.platforms?.join(', ') || 'TBA'}</span>
           </div>
         </div>
 
@@ -172,10 +148,42 @@ const Games = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
-        <div className="container mx-auto px-4 pt-32">
+        <div className="container mx-auto px-4 pt-32 pb-16">
+          <div className="text-center mb-12">
+            <Skeleton className="h-12 w-64 mx-auto mb-4" />
+            <Skeleton className="h-6 w-96 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="gaming-card">
+                <Skeleton className="h-48 w-full" />
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!games.length) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <GamingHeader />
+        <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">
-            <div className="animate-glow-pulse w-16 h-16 bg-gradient-primary rounded-xl mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading games...</p>
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Our Games
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              No games available at the moment. Check back soon for exciting new releases!
+            </p>
           </div>
         </div>
       </div>

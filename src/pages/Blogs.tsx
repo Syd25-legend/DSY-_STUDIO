@@ -6,102 +6,63 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, User, Search, ArrowRight } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// CHANGES FOR AUTH AND DATABASE HERE - Replace with actual data fetching from Supabase
-const mockBlogs = [
-  {
-    id: 1,
-    title: "The Making of Antim Sawari: A Behind-the-Scenes Look",
-    excerpt: "Dive deep into the development process of our psychological horror masterpiece and discover the challenges we faced bringing nightmares to life.",
-    content: "Full blog content here...",
-    author: "DSY Studio Team",
-    publishDate: "2024-03-10",
-    readTime: "8 min read",
-    category: "Development",
-    image: "/api/placeholder/600/300",
-    featured: true,
-    tags: ["Game Development", "Horror", "Behind the Scenes"]
-  },
-  {
-    id: 2,
-    title: "Sound Design in Horror Games: Creating Fear Through Audio",
-    excerpt: "Learn how we crafted the spine-chilling audio experience that makes Antim Sawari truly terrifying.",
-    content: "Full blog content here...",
-    author: "Alex Chen",
-    publishDate: "2024-02-28",
-    readTime: "6 min read",
-    category: "Audio",
-    image: "/api/placeholder/600/300",
-    featured: false,
-    tags: ["Sound Design", "Horror", "Audio"]
-  },
-  {
-    id: 3,
-    title: "Upcoming Projects: What's Next for DSY Studio",
-    excerpt: "Get an exclusive preview of our upcoming games and the exciting new directions we're exploring.",
-    content: "Full blog content here...",
-    author: "DSY Studio Team",
-    publishDate: "2024-02-15",
-    readTime: "5 min read",
-    category: "News",
-    image: "/api/placeholder/600/300",
-    featured: true,
-    tags: ["News", "Upcoming Games", "Studio Updates"]
-  },
-  {
-    id: 4,
-    title: "The Psychology of Horror: Why We Love Being Scared",
-    excerpt: "Exploring the psychological aspects that make horror games so compelling and addictive.",
-    content: "Full blog content here...",
-    author: "Dr. Sarah Martinez",
-    publishDate: "2024-02-01",
-    readTime: "10 min read",
-    category: "Psychology",
-    image: "/api/placeholder/600/300",
-    featured: false,
-    tags: ["Psychology", "Horror", "Game Theory"]
-  },
-  {
-    id: 5,
-    title: "Community Spotlight: Fan Art and Creations",
-    excerpt: "Celebrating the incredible creativity of our community with featured fan art and community creations.",
-    content: "Full blog content here...",
-    author: "Community Team",
-    publishDate: "2024-01-20",
-    readTime: "4 min read",
-    category: "Community",
-    image: "/api/placeholder/600/300",
-    featured: false,
-    tags: ["Community", "Fan Art", "Showcase"]
-  }
-];
+interface Blog {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  author_id: string;
+  published_at: string;
+  read_time: string;
+  category: string;
+  image_url: string;
+  featured: boolean;
+  tags: string[];
+}
 
 const Blogs = () => {
-  const [blogs, setBlogs] = useState(mockBlogs);
-  const [loading, setLoading] = useState(false);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // CHANGES FOR AUTH AND DATABASE HERE - Replace with actual data fetching
   useEffect(() => {
     const fetchBlogs = async () => {
-      setLoading(true);
-      // Simulate API call - replace with Supabase query
-      setTimeout(() => {
-        setBlogs(mockBlogs);
+      try {
+        const { data, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .order('featured', { ascending: false })
+          .order('published_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching blogs:', error);
+          setBlogs([]);
+        } else {
+          setBlogs(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching blogs:', error);
+        setBlogs([]);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchBlogs();
   }, []);
 
-  const categories = ["All", ...Array.from(new Set(blogs.map(blog => blog.category)))];
+  const categories = ["All", ...Array.from(new Set(blogs.map(blog => blog.category).filter(Boolean)))];
   const featuredBlogs = blogs.filter(blog => blog.featured);
 
   const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = !searchTerm || 
+      blog.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      blog.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      blog.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === "All" || blog.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -117,11 +78,11 @@ const Blogs = () => {
     return colors[category] || "bg-muted text-muted-foreground";
   };
 
-  const BlogCard = ({ blog, featured = false }: { blog: typeof mockBlogs[0], featured?: boolean }) => (
+  const BlogCard = ({ blog, featured = false }: { blog: Blog, featured?: boolean }) => (
     <Card className={`gaming-card group overflow-hidden ${featured ? 'md:col-span-2' : ''}`}>
       <div className="relative overflow-hidden">
         <img
-          src={blog.image}
+          src={blog.image_url || "/api/placeholder/600/300"}
           alt={blog.title}
           className={`w-full object-cover transition-transform group-hover:scale-105 ${
             featured ? 'h-64' : 'h-48'
@@ -147,7 +108,7 @@ const Blogs = () => {
 
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-1">
-          {blog.tags.map((tag) => (
+          {blog.tags?.map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs">
               {tag}
             </Badge>
@@ -157,18 +118,16 @@ const Blogs = () => {
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
-              <User className="w-3 h-3" />
-              <span>{blog.author}</span>
-            </div>
-            <div className="flex items-center space-x-1">
               <Calendar className="w-3 h-3" />
-              <span>{new Date(blog.publishDate).toLocaleDateString()}</span>
+              <span>{blog.published_at ? new Date(blog.published_at).toLocaleDateString() : 'TBA'}</span>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
-            <Clock className="w-3 h-3" />
-            <span>{blog.readTime}</span>
-          </div>
+          {blog.read_time && (
+            <div className="flex items-center space-x-1">
+              <Clock className="w-3 h-3" />
+              <span>{blog.read_time}</span>
+            </div>
+          )}
         </div>
 
         <Link to={`/blogs/${blog.id}`}>
@@ -185,10 +144,42 @@ const Blogs = () => {
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
-        <div className="container mx-auto px-4 pt-32">
+        <div className="container mx-auto px-4 pt-32 pb-16">
+          <div className="text-center mb-12">
+            <Skeleton className="h-12 w-64 mx-auto mb-4" />
+            <Skeleton className="h-6 w-96 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="gaming-card">
+                <Skeleton className="h-48 w-full" />
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!blogs.length) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <GamingHeader />
+        <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">
-            <div className="animate-glow-pulse w-16 h-16 bg-gradient-primary rounded-xl mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading blogs...</p>
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Developer Blogs
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              No blog posts available at the moment. Check back soon for updates!
+            </p>
           </div>
         </div>
       </div>

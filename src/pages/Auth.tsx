@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Crown, Mail, Lock, User, Github } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -16,21 +19,77 @@ const Auth = () => {
     username: ""
   });
 
-  // CHANGES FOR AUTH AND DATABASE HERE - Replace with actual auth logic
-  const handleSubmit = (e: React.FormEvent) => {
+  const { user, signUp, signIn } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSignUp) {
-      console.log("Sign up with:", formData);
-      // Integrate with Supabase signup
-    } else {
-      console.log("Login with:", formData);
-      // Integrate with Supabase login
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        if (formData.password !== formData.confirmPassword) {
+          toast({
+            title: "Error",
+            description: "Passwords do not match",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const { error } = await signUp(formData.email, formData.password, formData.username);
+        if (error) {
+          toast({
+            title: "Sign Up Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Please check your email to confirm your account",
+          });
+        }
+      } else {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          toast({
+            title: "Sign In Error", 
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Welcome back!",
+            description: "You have been signed in successfully",
+          });
+          navigate('/');
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleAuth = () => {
-    console.log("Google auth - integrate with Supabase");
-    // CHANGES FOR AUTH AND DATABASE HERE - Integrate with Supabase Google auth
+    toast({
+      title: "Coming Soon",
+      description: "Google authentication will be available soon",
+    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,8 +249,8 @@ const Auth = () => {
                   </div>
                 )}
 
-                <Button type="submit" variant="gaming" className="w-full" size="lg">
-                  {isSignUp ? "Create Account" : "Sign In"}
+                <Button type="submit" variant="gaming" className="w-full" size="lg" disabled={loading}>
+                  {loading ? "Please wait..." : (isSignUp ? "Create Account" : "Sign In")}
                 </Button>
               </form>
 
