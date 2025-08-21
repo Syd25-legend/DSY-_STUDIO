@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
 
         // FIX: Redirects user to the homepage on successful sign-in
-        if (_event === 'SIGNED_IN' && session) {
+        if (_event === 'SIGNED_IN' && session && !user) {
           navigate('/');
         }
       }
