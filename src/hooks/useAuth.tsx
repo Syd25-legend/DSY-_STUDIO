@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  refreshUser: () => Promise<void>; // Add refreshUser function
+  refreshUser: () => Promise<void>;
   signUp: (email: string, password: string, username?: string) => Promise<{ error: AuthError | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -25,6 +27,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // FIX: Redirects user to the homepage on successful sign-in
+        if (_event === 'SIGNED_IN' && session) {
+          navigate('/');
+        }
       }
     );
 
@@ -35,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const refreshUser = async () => {
     const { data, error } = await supabase.auth.refreshSession();
@@ -80,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user,
       session,
       loading,
-      refreshUser, // Expose the function
+      refreshUser,
       signUp,
       signIn,
       signOut
