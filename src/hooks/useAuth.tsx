@@ -22,40 +22,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
-        // FIX: Redirects user to the homepage on successful sign-in
-        if (_event === 'SIGNED_IN' && session && !user) {
-          navigate('/');
-        }
-      }
-    );
-
+    // Initial load
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+      if (session) {
+        setSession(session);
+        setUser(session.user);
+      }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, newSession) => {
+        if (newSession) {
+          setSession(newSession);
+          setUser(newSession.user);
 
+          // Only redirect if this is a *fresh* sign-in
+          if (event === 'SIGNED_IN' && !user) {
+            navigate('/');
+          }
+        } else {
+          // Explicit SIGNED_OUT or expired session
+          if (event === 'SIGNED_OUT') {
+            setSession(null);
+            setUser(null);
+          }
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate, user]);
+
+  // Refresh user + session safely
   const refreshUser = async () => {
     const { data, error } = await supabase.auth.refreshSession();
-    if (data.user) {
-      setUser(data.user);
+    if (data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
     } else if (error) {
       console.error("Error refreshing user session:", error);
     }
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
+    const redirectUrl = `${window.location.origin}/`; // you can change if needed
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -80,6 +94,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
   };
 
   return (
