@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,8 +170,10 @@ const Blogs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      {/* --- UPDATED: Style tag for the new zoom-in animation --- */}
       <style>{`
+        html, body {
+          overflow-x: hidden;
+        }
         @keyframes zoom-in-settle {
           0% { transform: scale(0.5); opacity: 0; }
           70% { transform: scale(1.05); opacity: 1; }
@@ -182,12 +186,10 @@ const Blogs = () => {
       <GamingHeader />
       
       <div className="container mx-auto px-4 pt-32 pb-16">
-        {/* --- UPDATED: Animation class changed from animate-slide-up --- */}
         <div className="text-center mb-12 animate-zoom-in-settle">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-4">
             Developer Blogs
           </h1>
-          {/* --- UPDATED: Added padding-bottom to fix text clipping --- */}
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto pb-1">
             Behind-the-scenes insights, development updates, and thoughts from the DSY Studio team.
           </p>

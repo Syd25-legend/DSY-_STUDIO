@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,6 +158,9 @@ const Insights = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <style>{`
+        html, body {
+          overflow-x: hidden;
+        }
         @keyframes zoom-in-settle {
           0% { transform: scale(0.5); opacity: 0; }
           70% { transform: scale(1.05); opacity: 1; }

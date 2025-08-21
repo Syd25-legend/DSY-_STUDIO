@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +110,28 @@ const Games = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <style>{`@keyframes zoom-in-settle {0% {transform: scale(0.5); opacity: 0;} 70% {transform: scale(1.05); opacity: 1;} 100% {transform: scale(1); opacity: 1;}} .animate-zoom-in-settle {animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;}`}</style>
+      <style>{`
+        html, body {
+          overflow-x: hidden;
+        }
+        @keyframes zoom-in-settle {
+          0% {
+            transform: scale(0.5); 
+            opacity: 0;
+          } 
+          70% {
+            transform: scale(1.05); 
+            opacity: 1;
+          } 
+          100% {
+            transform: scale(1); 
+            opacity: 1;
+          }
+        } 
+        .animate-zoom-in-settle {
+          animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+      `}</style>
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
         <div className="text-center mb-12 animate-zoom-in-settle">
