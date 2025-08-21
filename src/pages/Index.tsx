@@ -140,7 +140,7 @@ const Index = () => {
                         <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-12 h-10" />
                         <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Studio</span>
                       </div>
-                      <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="gradient-text">DSY Studio</span></h1>
+                      <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="text-accent">DSY Studio</span></h1>
                       <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">Crafting immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
@@ -167,7 +167,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4 pb-4">Your Gaming Hub</h2><p className="text-xl text-muted-foreground max-w-2xl mx-auto ">Discover, play, and connect with our comprehensive gaming platform</p></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[ { icon: GamepadIcon, title: "Premium Games", description: "Explore our collection of carefully crafted games", link: "/games", color: "text-primary" }, { icon: BookOpen, title: "Developer Blogs", description: "Behind-the-scenes insights from our team", link: "/blogs", color: "text-secondary" }, { icon: MessageCircle, title: "Community", description: "Join discussions and connect with fellow gamers", link: "/insights", color: "text-accent" }, { icon: Zap, title: "Latest Updates", description: "Stay informed about new releases and studio news", link: "/blogs", color: "text-primary-glow" } ].map((feature, index) => (
+            {[ { icon: GamepadIcon, title: "Premium Games", description: "Explore our collection of carefully crafted games", link: "/games", color: "text-accent" }, { icon: BookOpen, title: "Developer Blogs", description: "Behind-the-scenes insights from our team", link: "/blogs", color: "text-accent" }, { icon: MessageCircle, title: "Community", description: "Join discussions and connect with fellow gamers", link: "/insights", color: "text-accent" }, { icon: Zap, title: "Latest Updates", description: "Stay informed about new releases and studio news", link: "/blogs", color: "text-accent" } ].map((feature, index) => (
               <Card key={feature.title} className="gaming-card group flex flex-col" style={{ animationDelay: `${index * 0.1}s` }}>
                 <CardHeader className="text-center">
                   <feature.icon className={`w-12 h-12 mx-auto mb-4 ${feature.color} transition-transform group-hover:scale-110`} />
