@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner"; // --- 1. IMPORT THE TOAST FUNCTION ---
 import { 
   ArrowLeft, 
   Star, 
@@ -19,7 +22,6 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// --- NEW: Defined specific types to match your Supabase schema and replace 'any' ---
 interface SystemRequirementsDetails {
   os: string;
   processor: string;
@@ -28,9 +30,6 @@ interface SystemRequirementsDetails {
   storage: string;
 }
 
-// NOTE: Supabase doesn't support JSON arrays for reviews directly in a column.
-// This assumes you might fetch reviews from a separate 'reviews' table in the future.
-// For now, we will treat it as an empty array.
 interface Review {
   id: number;
   author: string;
@@ -48,7 +47,6 @@ export interface Game {
   status: string;
   releaseDate: string;
   rating: number;
-  // players: string;
   developer: string;
   platforms: string[];
   tags: string[];
@@ -65,14 +63,12 @@ export interface Game {
 
 const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
-  // FIXED: Replaced useState<any> with the new Game interface
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
-    // --- NEW: Fetches a single game's data from Supabase ---
     const fetchGame = async () => {
       if (!id) return;
       setLoading(true);
@@ -102,9 +98,15 @@ const GameDetail = () => {
     setIsFavorited(!isFavorited);
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    // You can add a toast notification here to confirm copying
+  // --- 2. UPDATE THE handleShare FUNCTION ---
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard!"); // Display success toast
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      toast.error("Failed to copy link."); // Display error toast
+    }
   };
 
   if (loading) {
@@ -236,11 +238,18 @@ const GameDetail = () => {
 
           <div className="space-y-6">
             <Card className="gaming-card"><CardHeader><div className="flex items-center justify-between"><CardTitle className="text-2xl font-bold">{game.price}</CardTitle><div className="flex items-center space-x-2">
-              <Button variant="ghost" size="icon" onClick={handleFavorite} className={isFavorited ? "text-red-500" : ""}><Heart className={`h-5 w-5 ${isFavorited ? "fill-current" : ""}`} /></Button>
               <Button variant="ghost" size="icon" onClick={handleShare}><Share2 className="h-5 w-5" /></Button>
             </div></div></CardHeader><CardContent className="space-y-4">
-              <Button variant="gaming" size="lg" className="w-full"><Play className="mr-2 h-5 w-5" />Play Now</Button>
-              <Button variant="outline" size="lg" className="w-full"><Download className="mr-2 h-5 w-5" />Add to Wishlist</Button>
+              <a 
+                href="https://syd-25.itch.io/antim-yatra" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <Button variant="gaming" size="lg" className="w-full">
+                  <Download className="mr-2 h-5 w-5" />
+                  Download
+                </Button>
+              </a>
             </CardContent></Card>
 
             <Card className="gaming-card"><CardHeader><CardTitle>Game Information</CardTitle></CardHeader><CardContent className="space-y-4">
@@ -248,7 +257,6 @@ const GameDetail = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground">Developer:</span><span>{game.developer}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Release Date:</span><span>{new Date(game.releaseDate).toLocaleDateString()}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Genre:</span><span>{game.genre}</span></div>
-                {/* <div className="flex justify-between"><span className="text-muted-foreground">Players:</span><span>{game.players || 'N/A'}</span></div> */}
                 {game.rating > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Rating:</span><div className="flex items-center space-x-1"><Star className="w-4 h-4 text-yellow-400 fill-current" /><span>{game.rating}/5</span></div></div>}
               </div><Separator /><div>
                 <h4 className="font-medium mb-2 text-sm">Available Platforms:</h4>
