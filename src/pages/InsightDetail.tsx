@@ -174,7 +174,7 @@ const InsightDetail = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1"><Calendar className="w-4 h-4" /><span>{new Date(insight.created_at).toLocaleDateString()}</span></div>
                   <div className="flex items-center space-x-1"><Eye className="w-4 h-4" /><span>{formatNumber(insight.views)} views</span></div>
-                  <div className="flex items-center space-x-1"><Heart className="w-4 h-4" /><span>{formatNumber(insight.likes)} likes</span></div>
+                  {/* <div className="flex items-center space-x-1"><Heart className="w-4 h-4" /><span>{formatNumber(insight.likes)} likes</span></div> */}
                 </div>
               </div>
               {insight.tags && insight.tags.length > 0 && <div className="flex flex-wrap gap-2">{insight.tags.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}</div>}
