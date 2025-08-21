@@ -138,7 +138,7 @@ const Index = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-center space-x-2 mb-4">
                         <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-12 h-10" />
-                        <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Studio</span>
+                        <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Development Studio</span>
                       </div>
                       <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="gradient-text">DSY Studio</span></h1>
                       <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">Crafting immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment.</p>
