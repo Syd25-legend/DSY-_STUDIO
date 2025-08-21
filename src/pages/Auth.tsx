@@ -104,7 +104,7 @@ const Auth = () => {
       rotateY: 0,
       opacity: 1,
       transition: {
-        duration: 0.5,
+        duration: 0.2,
         ease: "easeOut"
       }
     },
@@ -112,7 +112,7 @@ const Auth = () => {
       rotateY: 90,
       opacity: 0,
       transition: {
-        duration: 0.2,
+        duration: 0.5,
         ease: "easeIn"
       }
     }
