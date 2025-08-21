@@ -101,11 +101,14 @@ const Index = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
-            <div className="animate-fade-in-scale">
+            {/* --- LEFT COLUMN --- */}
+            <div>
               {isGameLoading ? (
-                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center"><p className="text-muted-foreground">Loading Featured Game...</p></Card>
+                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center">
+                  <p className="text-muted-foreground">Loading Featured Game...</p>
+                </Card>
               ) : featuredGame ? (
-                <Card className="gaming-card overflow-hidden group">
+                <Card className="gaming-card overflow-hidden group animate-blur-zoom-in">
                   <div className="relative">
                     <img src={featuredGame.image} alt={featuredGame.title} className="w-full h-64 object-cover transition-transform group-hover:scale-105" />
                     <div className="absolute top-4 left-4"><Badge className="bg-accent text-accent-foreground">{featuredGame.status}</Badge></div>
@@ -115,37 +118,46 @@ const Index = () => {
                   <CardContent><Link to={`/games/${featuredGame.id}`}><Button variant="gaming" className="w-full group/btn">View Details<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" /></Button></Link></CardContent>
                 </Card>
               ) : (
-                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center"><p className="text-muted-foreground">No featured game available right now.</p></Card>
+                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center animate-blur-zoom-in">
+                  <p className="text-muted-foreground">No featured game available right now.</p>
+                </Card>
               )}
             </div>
 
-            <div className="space-y-8 animate-blur-zoom-in" style={{ animationDelay: '0.3s' }}>
-              {/* --- MODIFICATION START --- */}
-              <div className="text-center">
-                <div className="space-y-4">
-                  {/* Added justify-center to center the logo and text */}
-                  <div className="flex items-center justify-center space-x-2 mb-4">
-                    <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-12 h-10" />
-                    <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Studio</span>
+            {/* --- RIGHT COLUMN --- */}
+            <div className="h-[450px] flex flex-col justify-center">
+              {isGameLoading ? (
+                <div className="text-center">
+                  <p className="text-muted-foreground">Loading Studio Info...</p>
+                </div>
+              ) : (
+                // --- MODIFICATION START: Removed style={{ animationDelay: '0.3s' }} ---
+                <div className="space-y-8 animate-blur-zoom-in">
+                {/* // --- MODIFICATION END --- */}
+                  <div className="text-center">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center space-x-2 mb-4">
+                        <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-12 h-10" />
+                        <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Studio</span>
+                      </div>
+                      <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="gradient-text">DSY Studio</span></h1>
+                      <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">Crafting immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment.</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                      <Link to="/games"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />Explore Our Games</Button></Link>
+                      <Link to="/insights"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
+                    </div>
                   </div>
-                  <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="gradient-text">DSY Studio</span></h1>
-                  <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">Crafting immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment.</p>
-                </div>
-                {/* Added justify-center to center the buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                  <Link to="/games"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />Explore Our Games</Button></Link>
-                  <Link to="/insights"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
-                </div>
-              </div>
-              {/* --- MODIFICATION END --- */}
 
-              {/* Stats div is now outside the centering wrapper */}
-              <div className="grid grid-cols-3 gap-4 pt-8">
-                <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.games}</div><div className="text-sm text-muted-foreground">Games</div></div>
-                <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.discussions}</div><div className="text-sm text-muted-foreground">Discussions</div></div>
-                <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.blogPosts}</div><div className="text-sm text-muted-foreground">Blog Posts</div></div>
-              </div>
+                  <div className="grid grid-cols-3 gap-4 pt-8">
+                    <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.games}</div><div className="text-sm text-muted-foreground">Games</div></div>
+                    <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.discussions}</div><div className="text-sm text-muted-foreground">Discussions</div></div>
+                    <div className="text-center"><div className="text-2xl font-bold gradient-text">{stats.blogPosts}</div><div className="text-sm text-muted-foreground">Blog Posts</div></div>
+                  </div>
+                </div>
+              )}
             </div>
+
           </div>
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none"><GamepadIcon className="floating-icon w-12 h-12 text-primary/20 absolute top-20 left-16" /><Headphones className="floating-icon w-10 h-10 text-accent/20 absolute top-40 right-20" /><Monitor className="floating-icon w-14 h-14 text-secondary/15 absolute bottom-32 left-32" /></div>
@@ -153,7 +165,7 @@ const Index = () => {
 
       <section className="py-24 relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">Your Gaming Hub</h2><p className="text-xl text-muted-foreground max-w-2xl mx-auto">Discover, play, and connect with our comprehensive gaming platform</p></div>
+          <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4 pb-4">Your Gaming Hub</h2><p className="text-xl text-muted-foreground max-w-2xl mx-auto ">Discover, play, and connect with our comprehensive gaming platform</p></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[ { icon: GamepadIcon, title: "Premium Games", description: "Explore our collection of carefully crafted games", link: "/games", color: "text-primary" }, { icon: BookOpen, title: "Developer Blogs", description: "Behind-the-scenes insights from our team", link: "/blogs", color: "text-secondary" }, { icon: MessageCircle, title: "Community", description: "Join discussions and connect with fellow gamers", link: "/insights", color: "text-accent" }, { icon: Zap, title: "Latest Updates", description: "Stay informed about new releases and studio news", link: "/blogs", color: "text-primary-glow" } ].map((feature, index) => (
               <Card key={feature.title} className="gaming-card group flex flex-col" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -177,8 +189,8 @@ const Index = () => {
             <h2 className="text-3xl md:text-4xl font-bold gradient-text pb-2">Ready to Begin Your Journey?</h2>
             <p className="text-xl text-muted-foreground">Join our community to unlock exclusive content, participate in discussions, and be the first to know about new releases.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
-              <Link to="/games"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Play className="mr-2 h-5 w-5" />Start Playing</Button></Link>
+              {/* <Link to="/auth"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
+              <Link to="/games"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Play className="mr-2 h-5 w-5" />Start Playing</Button></Link> */}
             </div>
           </div>
         </div>
