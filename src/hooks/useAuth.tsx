@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -21,40 +21,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Use a ref to track the session state without causing re-runs of useEffect
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+
   useEffect(() => {
-    // Initial load
+    // Initial load check for an existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSession(session);
-        setUser(session.user);
-      }
+      setSession(session);
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        if (newSession) {
-          setSession(newSession);
-          setUser(newSession.user);
+        // Always synchronize the local state with Supabase's state
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
 
-          // Only redirect if this is a *fresh* sign-in
-          if (event === 'SIGNED_IN' && !user) {
-            navigate('/');
-          }
-        } else {
-          // Explicit SIGNED_OUT or expired session
-          if (event === 'SIGNED_OUT') {
-            setSession(null);
-            setUser(null);
-          }
+        // Only act on the initial, fresh sign-in from the email link
+        if (event === 'SIGNED_IN' && !sessionRef.current) {
+          navigate('/');
+          
+          // Clean the URL to remove the auth token hash, preventing re-authentication on refresh
+          window.history.replaceState(null, '', window.location.pathname);
         }
+        
         setLoading(false);
       }
     );
 
+    // Cleanup the subscription when the component unmounts
     return () => subscription.unsubscribe();
-  }, [navigate, user]);
+  }, [navigate]); // Dependency array without 'user' to prevent re-subscribing
 
   // Refresh user + session safely
   const refreshUser = async () => {
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, username?: string) => {
-    const redirectUrl = `${window.location.origin}/`; // you can change if needed
+    const redirectUrl = `${window.location.origin}/`;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -94,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // State will also be cleared by onAuthStateChange, but setting it here provides immediate feedback
     setUser(null);
     setSession(null);
   };
