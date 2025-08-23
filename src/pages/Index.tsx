@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Helmet } from 'react-helmet-async';
 import {
   Play,
   Users,
@@ -77,6 +78,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Helmet>
+  <title>DSY Studio - Indie Game Development Studio</title>
+  <meta name="description" content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community." />
+</Helmet>
       <style>{`
         @keyframes blur-zoom-in {
           0% {

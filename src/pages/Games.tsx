@@ -11,6 +11,7 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Game } from "./GameDetail"; // Import the Game interface
+import { Helmet } from 'react-helmet-async';
 
 const Games = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -110,6 +111,10 @@ const Games = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Helmet>
+  <title>Our Games - DSY Studio</title>
+  <meta name="description" content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures." />
+</Helmet>
       <style>{`
         html, body {
           overflow-x: hidden;
