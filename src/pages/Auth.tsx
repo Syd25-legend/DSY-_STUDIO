@@ -126,7 +126,7 @@ const Auth = () => {
         <div className="relative z-10 flex flex-col justify-center h-full px-12 text-center">
           <div className="mb-8">
             <div className="w-20 h-20 bg-gradient-primary rounded-2xl mx-auto mb-6 flex items-center justify-center">
-              <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-16 h-13" />
+              <img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-16 h-13" />
             </div>
             <h1 className="text-4xl font-bold gradient-text mb-4">DSY Studio</h1>
             <p className="text-xl text-muted-foreground mb-8">

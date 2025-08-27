@@ -69,7 +69,7 @@ const Index = () => {
   }, []);
 
   const studioInfo = {
-    description: "Two lifelong friends who are now creators, we are motivated by our love of games and narrative. By combining design and development, we precisely and creatively bring concepts to life. We are creating worlds worth exploring, and our journey is only getting started.",
+    description: "As two lifelong friends and creators, DSY Studio is motivated by a love for games and narrative. Our focus is on indie game development, specializing in immersive horror games and rich interactive storytelling. We are creating worlds worth exploring, and our journey with our debut title, Antim Yatra, is only getting started.",
     team: [
       { id: 1, name: "Souhardyo Dey", role: "Game Developer", description: "Materializes concepts into reality by creating and iterating on each aspect of the game.", },
       { id: 2, name: "Baibhab Paul", role: "Game Designer", description: "Shapes the vision, the stories, and the mechanics into immersive experiences.",  }
@@ -142,7 +142,7 @@ const Index = () => {
                   <div className="text-center">
                     <div className="space-y-4">
                       <div className="flex items-center justify-center space-x-2 mb-4">
-                        <img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-12 h-10" />
+                        <img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-12 h-10" />
                         <span className="text-sm font-medium text-primary tracking-wider uppercase">Indie Game Development Studio</span>
                       </div>
                       <h1 className="text-5xl md:text-7xl font-bold leading-tight"><span className="text-accent">DSY Studio</span></h1>
@@ -220,7 +220,7 @@ const Index = () => {
       <footer className="border-t border-primary/20 py-12 backdrop-blur-sm">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4"><div className="flex items-center space-x-2"><img src="/dsy-logo.png" alt="DSY Studio Logo" className="w-8 h-6" /><span className="text-lg font-bold gradient-text">DSY Studio</span></div><p className="text-sm text-muted-foreground">Creating immersive gaming experiences.</p></div>
+            <div className="space-y-4"><div className="flex items-center space-x-2"><img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-8 h-6" /><span className="text-lg font-bold gradient-text">DSY Studio</span></div><p className="text-sm text-muted-foreground">Creating immersive gaming experiences.</p></div>
             <div><h4 className="font-semibold mb-4">Games</h4><ul className="space-y-2 text-sm text-muted-foreground"><li><Link to="/games" className="hover:text-primary transition-colors">All Games</Link></li><li><Link to="/games/1" className="hover:text-primary transition-colors">Antim Sawari</Link></li></ul></div>
             <div><h4 className="font-semibold mb-4">Community</h4><ul className="space-y-2 text-sm text-muted-foreground"><li><Link to="/insights" className="hover:text-primary transition-colors">Discussions</Link></li><li><Link to="/blogs" className="hover:text-primary transition-colors">Developer Blog</Link></li><li><Link to="/auth" className="hover:text-primary transition-colors">Join Us</Link></li></ul></div>
             <div>
