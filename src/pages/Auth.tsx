@@ -118,6 +118,8 @@ const Auth = () => {
     }
   };
 
+  
+
   return (
     <div className="bg-background">
       {/* Left Panel - Branding */}

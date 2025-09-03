@@ -12,6 +12,8 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
+
+
 // Interface for a single blog post
 interface Blog {
   id: string;
@@ -26,6 +28,7 @@ interface Blog {
   featured: boolean;
   tags: string[];
 }
+
 
 const BlogDetail = () => {
   const { id } = useParams();

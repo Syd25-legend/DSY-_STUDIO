@@ -16,6 +16,10 @@ import BlogDetail from "./pages/BlogDetail";
 import Insights from "./pages/Insights";
 import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
+import ReactGA from "react-ga4";
+
+const GA_MEASUREMENT_ID = "G-WKPZK8BM4P"; 
+ReactGA.initialize(GA_MEASUREMENT_ID);
 
 // This ProtectedRoute component is correct and does not need changes.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
