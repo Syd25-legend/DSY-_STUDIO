@@ -18,7 +18,7 @@ import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
 import ReactGA from "react-ga4";
 
-const GA_MEASUREMENT_ID = "G-WKPZK8BM4P"; 
+const GA_MEASUREMENT_ID = "G-D03S1PLQKY"; 
 ReactGA.initialize(GA_MEASUREMENT_ID);
 
 // This ProtectedRoute component is correct and does not need changes.

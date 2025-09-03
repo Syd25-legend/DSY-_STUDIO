@@ -10,7 +10,7 @@ const RouteChangeTracker = () => {
   useEffect(() => {
     // Replace with your Measurement ID
     // You can also move this to App.tsx
-    ReactGA.initialize("G-WKPZK8BM4PX");
+    ReactGA.initialize("G-D03S1PLQKY");
     setInitialized(true);
   }, []);
 
