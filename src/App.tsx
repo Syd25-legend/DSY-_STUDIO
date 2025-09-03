@@ -2,10 +2,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-// REMOVED: QueryClient and QueryClientProvider as they are in main.tsx
-import { Routes, Route, Navigate } from "react-router-dom"; // REMOVED: BrowserRouter from imports
-import { useAuth } from "@/hooks/useAuth"; // REMOVED: AuthProvider as it's in main.tsx
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import ScrollToTop from "./components/ScrollToTop";
+import RouteChangeTracker from "./components/RouteChangeTracker"; // <-- 1. IMPORT RouteChangeTracker
+
+// Import all your page components
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -16,10 +18,8 @@ import BlogDetail from "./pages/BlogDetail";
 import Insights from "./pages/Insights";
 import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
-import ReactGA from "react-ga4";
 
-const GA_MEASUREMENT_ID = "G-D03S1PLQKY"; 
-ReactGA.initialize(GA_MEASUREMENT_ID);
+// 2. REMOVED the duplicate ReactGA import and initialization from here. It is correctly placed in main.tsx.
 
 // This ProtectedRoute component is correct and does not need changes.
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,12 +41,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => (
-  // REMOVED: QueryClientProvider and AuthProvider from here.
   <TooltipProvider>
     <Toaster />
     <Sonner />
-    {/* REMOVED: The extra <BrowserRouter> that was wrapping the routes */}
     <ScrollToTop />
+    <RouteChangeTracker /> {/* <-- 3. ADDED the tracker here. It will now track all page changes. */}
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
