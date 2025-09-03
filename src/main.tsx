@@ -11,8 +11,10 @@ import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async'; // <-- IMPORTED
 import { AuthProvider } from './hooks/useAuth'; 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ReactGA from "react-ga4";
 
-
+const GA_MEASUREMENT_ID = "G-D03S1PLQKY"; 
+ReactGA.initialize(GA_MEASUREMENT_ID);
 // Initialize the Query Client
 const queryClient = new QueryClient();
 
