@@ -70,7 +70,7 @@ const GamingHeader = () => {
               <div className="w-10 h-10 rounded-lg flex items-center justify-center">
                <img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-11 h-8" />
               </div>
-              <span className="text-xl font-bold gradient-text">DSY Studio</span>
+              {/* <span className="text-xl font-bold text-accent">DSY Studio</span> */}
             </Link>
           </div>
 
