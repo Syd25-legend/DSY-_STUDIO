@@ -1,0 +1,2 @@
+<title>DSY Studio- Indie Game Development Studio</title>
+<meta name="description" content="DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds. Discover our projects." />
