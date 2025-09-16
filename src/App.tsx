@@ -18,6 +18,8 @@ import BlogDetail from "./pages/BlogDetail";
 import Insights from "./pages/Insights";
 import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
+import AboutUs from "./pages/AboutUs"; // <-- ADDED IMPORT
+import ContactUs from "./pages/ContactUs"; // <-- ADDED IMPORT
 
 // 2. REMOVED the duplicate ReactGA import and initialization from here. It is correctly placed in main.tsx.
 
@@ -55,6 +57,11 @@ const App = () => (
       <Route path="/blogs/:id" element={<BlogDetail />} />
       <Route path="/insights" element={<Insights />} />
       <Route path="/insights/:id" element={<InsightDetail />} />
+      
+      {/* --- ADDED NEW ROUTES --- */}
+      <Route path="/about" element={<AboutUs />} />
+      <Route path="/contact" element={<ContactUs />} />
+      {/* ------------------------- */}
 
       <Route 
         path="/profile"

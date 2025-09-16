@@ -188,20 +188,20 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-24 relative">
-        <div className="container mx-auto px-4 text-center">
+      {/* <section className="py-24 relative"> */}
+        {/* <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto space-y-8">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text pb-2">Ready to Begin Your Journey?</h2>
             <p className="text-xl text-muted-foreground">Join our community to unlock exclusive content, participate in discussions, and be the first to know about new releases.</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {/* <Link to="/auth"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
               <Link to="/games"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Play className="mr-2 h-5 w-5" />Start Playing</Button></Link> */}
-            </div>
+            {/* </div>
           </div>
-        </div>
-      </section>
+        </div> */}
+      {/* </section> */} 
 
-      <section className="py-24 relative border-t border-primary/20">
+      {/* <section className="py-24 relative border-t border-primary/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">About Us</h2><p className="text-xl text-muted-foreground max-w-3xl mx-auto">{studioInfo.description}</p></div>
           <div className="flex flex-col md:flex-row justify-center gap-12 lg:gap-24">
@@ -215,7 +215,7 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       <footer className="border-t border-primary/20 py-12 backdrop-blur-sm">
         <div className="container mx-auto px-4">
