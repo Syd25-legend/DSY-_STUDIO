@@ -45,7 +45,7 @@ const App = () => {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "DSY Studio",
-    "url": "https://www.studiodsy.shop/"
+    "url": "https://www.studiodsy.xyz/"
   };
 
   return (
@@ -54,7 +54,7 @@ const App = () => {
       <Helmet>
         <title>DSY Studio- Indie Game Development Studio</title>
         <meta name="description" content="DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds. Discover our projects." />
-        <link rel="canonical" href="https://www.studiodsy.shop/" />
+        <link rel="canonical" href="https://www.studiodsy.xyz/" />
         <meta property="og:site_name" content="DSY Studio" />
         <script type="application/ld+json">
           {JSON.stringify(structuredData)}
