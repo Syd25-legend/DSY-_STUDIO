@@ -1,4 +1,4 @@
-
+// src/pages/GameDetail.tsx
 
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -7,20 +7,21 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner"; // --- 1. IMPORT THE TOAST FUNCTION ---
+import { toast } from "sonner";
 import { 
   ArrowLeft, 
   Star, 
   Monitor, 
   Cpu,
-  Play,
   Download,
-  Heart,
-  Share2
+  Share2,
+  ShoppingBag // New Icon
 } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth"; // Import useAuth
 import { Skeleton } from "@/components/ui/skeleton";
+import { Helmet } from "react-helmet-async";
 
 interface SystemRequirementsDetails {
   os: string;
@@ -28,14 +29,6 @@ interface SystemRequirementsDetails {
   memory: string;
   graphics: string;
   storage: string;
-}
-
-interface Review {
-  id: number;
-  author: string;
-  rating: number;
-  comment: string;
-  date: string;
 }
 
 export interface Game {
@@ -63,26 +56,46 @@ export interface Game {
 
 const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth(); // Get user from auth context
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(0);
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false); // State to track purchase
 
   useEffect(() => {
-    const fetchGame = async () => {
+    const fetchGameAndPurchaseStatus = async () => {
       if (!id) return;
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        // --- 1. Fetch Game Details ---
+        const { data: gameData, error: gameError } = await supabase
           .from('games')
           .select('*')
           .eq('id', id)
           .single();
 
-        if (error) {
-          throw error;
+        if (gameError) throw gameError;
+        setGame(gameData as Game);
+
+        // --- 2. Check Purchase Status if user is logged in ---
+        if (user) {
+          const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('game_id', id)
+            .limit(1)
+            .single();
+          
+          if (orderError && orderError.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
+            throw orderError;
+          }
+
+          if (orderData) {
+            setHasPurchased(true);
+          }
         }
-        setGame(data as Game);
+
       } catch (error) {
         console.error("Error fetching game details:", error);
         setGame(null);
@@ -91,21 +104,16 @@ const GameDetail = () => {
       }
     };
 
-    fetchGame();
-  }, [id]);
+    fetchGameAndPurchaseStatus();
+  }, [id, user]); // Rerun effect if user logs in/out
 
-  const handleFavorite = () => {
-    setIsFavorited(!isFavorited);
-  };
-
-  // --- 2. UPDATE THE handleShare FUNCTION ---
   const handleShare = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!"); // Display success toast
+      toast.success("Link copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy: ", err);
-      toast.error("Failed to copy link."); // Display error toast
+      toast.error("Failed to copy link.");
     }
   };
 
@@ -115,14 +123,8 @@ const GameDetail = () => {
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              <Skeleton className="h-12 w-3/4" />
-              <Skeleton className="h-96 w-full" />
-            </div>
-            <div className="space-y-6">
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-64 w-full" />
-            </div>
+            <div className="lg:col-span-2 space-y-8"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-96 w-full" /></div>
+            <div className="space-y-6"><Skeleton className="h-48 w-full" /><Skeleton className="h-64 w-full" /></div>
           </div>
         </div>
       </div>
@@ -135,12 +137,7 @@ const GameDetail = () => {
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 text-center">
           <h1 className="text-2xl font-bold mb-4">Game Not Found</h1>
-          <Link to="/games">
-            <Button variant="gaming">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Games
-            </Button>
-          </Link>
+          <Link to="/games"><Button variant="gaming"><ArrowLeft className="mr-2 h-4 w-4" />Back to Games</Button></Link>
         </div>
       </div>
     );
@@ -155,103 +152,76 @@ const GameDetail = () => {
       default: return "bg-muted text-muted-foreground";
     }
   };
+  
+  const ActionButton = () => {
+    if (hasPurchased) {
+      return (
+        <a href="https://syd-25.itch.io/antim-yatra" target="_blank" rel="noopener noreferrer">
+          <Button variant="gaming" size="lg" className="w-full">
+            <Download className="mr-2 h-5 w-5" /> Download
+          </Button>
+        </a>
+      );
+    }
+    return (
+      <Link to={`/payment/${game.id}`} className="w-full">
+        <Button variant="hero" size="lg" className="w-full">
+          <ShoppingBag className="mr-2 h-5 w-5" /> Buy Now
+        </Button>
+      </Link>
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Helmet>
+        <title>{game.title} - DSY Studio</title>
+        <meta name="description" content={game.description} />
+      </Helmet>
       <GamingHeader />
       
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="mb-8">
-          <Link to="/games">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Games
-            </Button>
-          </Link>
-        </div>
-
+        <div className="mb-8"><Link to="/games"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Games</Button></Link></div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <div className="space-y-6">
-              <div className="flex flex-wrap items-center gap-4">
-                <h1 className="text-3xl md:text-4xl font-bold gradient-text">{game.title}</h1>
-                <Badge className={getStatusColor(game.status)}>{game.status}</Badge>
-              </div>
+              <div className="flex flex-wrap items-center gap-4"><h1 className="text-3xl md:text-4xl font-bold gradient-text">{game.title}</h1><Badge className={getStatusColor(game.status)}>{game.status}</Badge></div>
               <p className="text-lg text-muted-foreground">{game.description}</p>
-              <div className="flex flex-wrap gap-2">
-                {game.tags?.map((tag: string) => <Badge key={tag} variant="outline">{tag}</Badge>)}
-              </div>
+              <div className="flex flex-wrap gap-2">{game.tags?.map((tag: string) => <Badge key={tag} variant="outline">{tag}</Badge>)}</div>
             </div>
-
-            <Card className="gaming-card overflow-hidden">
-              <CardContent className="p-0">
-                <div className="relative">
-                  {game.media && game.media.length > 0 && (
-                    <>
-                      <img src={game.media[selectedMedia]} alt={`${game.title} screenshot ${selectedMedia + 1}`} className="w-full h-96 object-cover" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <div className="flex space-x-2 overflow-x-auto">
-                          {game.media.map((media: string, index: number) => (
-                            <button key={index} onClick={() => setSelectedMedia(index)} className={`flex-shrink-0 w-20 h-12 rounded-lg overflow-hidden border-2 transition-colors ${selectedMedia === index ? "border-primary" : "border-transparent hover:border-primary/50"}`}>
-                              <img src={media} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
+            <Card className="gaming-card overflow-hidden"><CardContent className="p-0"><div className="relative">
+              {game.media && game.media.length > 0 && (<><img src={game.media[selectedMedia]} alt={`${game.title} screenshot ${selectedMedia + 1}`} className="w-full h-96 object-cover" /><div className="absolute bottom-4 left-4 right-4"><div className="flex space-x-2 overflow-x-auto">
+                {game.media.map((media: string, index: number) => (<button key={index} onClick={() => setSelectedMedia(index)} className={`flex-shrink-0 w-20 h-12 rounded-lg overflow-hidden border-2 transition-colors ${selectedMedia === index ? "border-primary" : "border-transparent hover:border-primary/50"}`}><img src={media} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" /></button>))}
+              </div></div></>)}
+            </div></CardContent></Card>
             <Tabs defaultValue="story" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="story">Story</TabsTrigger>
-                <TabsTrigger value="requirements">Requirements</TabsTrigger>
-              </TabsList>
-              <TabsContent value="story" className="space-y-4 pt-4">
-                <Card className="gaming-card"><CardHeader><CardTitle>Full Story</CardTitle></CardHeader><CardContent><p className="text-muted-foreground leading-relaxed">{game.fullStory}</p></CardContent></Card>
-              </TabsContent>
-              <TabsContent value="requirements" className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {game.systemRequirements?.minimum && (
-                    <Card className="gaming-card"><CardHeader><CardTitle className="flex items-center"><Monitor className="mr-2 h-5 w-5" />Minimum</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
-                      <div className="flex justify-between"><span className="text-muted-foreground">OS:</span><span>{game.systemRequirements.minimum.os}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Processor:</span><span className="text-right">{game.systemRequirements.minimum.processor}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Memory:</span><span>{game.systemRequirements.minimum.memory}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Graphics:</span><span className="text-right">{game.systemRequirements.minimum.graphics}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Storage:</span><span>{game.systemRequirements.minimum.storage}</span></div>
-                    </CardContent></Card>
-                  )}
-                  {game.systemRequirements?.recommended && (
-                    <Card className="gaming-card"><CardHeader><CardTitle className="flex items-center"><Cpu className="mr-2 h-5 w-5" />Recommended</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
-                      <div className="flex justify-between"><span className="text-muted-foreground">OS:</span><span>{game.systemRequirements.recommended.os}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Processor:</span><span className="text-right">{game.systemRequirements.recommended.processor}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Memory:</span><span>{game.systemRequirements.recommended.memory}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Graphics:</span><span className="text-right">{game.systemRequirements.recommended.graphics}</span></div>
-                      <div className="flex justify-between"><span className="text-muted-foreground">Storage:</span><span>{game.systemRequirements.recommended.storage}</span></div>
-                    </CardContent></Card>
-                  )}
-                </div>
-              </TabsContent>
+              <TabsList className="grid w-full grid-cols-2"><TabsTrigger value="story">Story</TabsTrigger><TabsTrigger value="requirements">Requirements</TabsTrigger></TabsList>
+              <TabsContent value="story" className="space-y-4 pt-4"><Card className="gaming-card"><CardHeader><CardTitle>Full Story</CardTitle></CardHeader><CardContent><p className="text-muted-foreground leading-relaxed">{game.fullStory}</p></CardContent></Card></TabsContent>
+              <TabsContent value="requirements" className="space-y-4 pt-4"><div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {game.systemRequirements?.minimum && (<Card className="gaming-card"><CardHeader><CardTitle className="flex items-center"><Monitor className="mr-2 h-5 w-5" />Minimum</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">OS:</span><span>{game.systemRequirements.minimum.os}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Processor:</span><span className="text-right">{game.systemRequirements.minimum.processor}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Memory:</span><span>{game.systemRequirements.minimum.memory}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Graphics:</span><span className="text-right">{game.systemRequirements.minimum.graphics}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Storage:</span><span>{game.systemRequirements.minimum.storage}</span></div>
+                </CardContent></Card>)}
+                {game.systemRequirements?.recommended && (<Card className="gaming-card"><CardHeader><CardTitle className="flex items-center"><Cpu className="mr-2 h-5 w-5" />Recommended</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">OS:</span><span>{game.systemRequirements.recommended.os}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Processor:</span><span className="text-right">{game.systemRequirements.recommended.processor}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Memory:</span><span>{game.systemRequirements.recommended.memory}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Graphics:</span><span className="text-right">{game.systemRequirements.recommended.graphics}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Storage:</span><span>{game.systemRequirements.recommended.storage}</span></div>
+                </CardContent></Card>)}
+              </div></TabsContent>
             </Tabs>
           </div>
-
           <div className="space-y-6">
             <Card className="gaming-card"><CardHeader><div className="flex items-center justify-between"><CardTitle className="text-2xl font-bold">{game.price}</CardTitle><div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" onClick={handleShare}><Share2 className="h-5 w-5" /></Button>
             </div></div></CardHeader><CardContent className="space-y-4">
-              <a 
-                href="https://syd-25.itch.io/antim-yatra" 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                <Button variant="gaming" size="lg" className="w-full">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download
-                </Button>
-              </a>
+              <ActionButton />
             </CardContent></Card>
-
             <Card className="gaming-card"><CardHeader><CardTitle>Game Information</CardTitle></CardHeader><CardContent className="space-y-4">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Developer:</span><span>{game.developer}</span></div>
