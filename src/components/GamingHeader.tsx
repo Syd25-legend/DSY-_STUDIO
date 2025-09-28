@@ -184,26 +184,22 @@ const GamingHeader = () => {
   return (
     <>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <header className={`fixed top-0 left-0 right-0 z-30 transition-all duration-500 ${scrolled ? 'py-2' : 'py-6'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-30 transition-all duration-500 ${scrolled ? 'py-2' : 'py-4'}`}>
         <div className="container mx-auto px-4">
-          <div className="relative flex items-center justify-between">
-            {/* UPDATED: Changed -translate-x-full to -translate-y-full */}
-            <div className={`transition-all duration-500 z-10 ${scrolled ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+          <div className="bg-card/80 backdrop-blur-md border border-primary/20 rounded-2xl px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center">
               <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
-                <Menu className="w-8 h-8 text-foreground" />
+                <Menu className="w-6 h-6 text-foreground" />
               </Button>
-            </div>
-            <nav className={`pill-nav px-6 py-3 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity duration-300 ${!scrolled ? 'hidden md:block' : 'block'}`}>
-              <div className="flex items-center space-x-6">
+              <nav className="hidden md:flex items-center space-x-6 ml-8">
                 {navItems.map((item) => (
                   <Link key={item.path} to={item.path} className={`text-sm font-medium transition-colors ${isActivePath(item.path) ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'}`}>
                     {item.label}
                   </Link>
                 ))}
-              </div>
-            </nav>
-            {/* UPDATED: Changed translate-x-full to -translate-y-full */}
-            <div className={`transition-all duration-500 flex items-center justify-end min-w-[10rem] ${scrolled ? 'opacity-0 -translate-y-full' : 'opacity-100 translate-y-0'}`}>
+              </nav>
+            </div>
+            <div className="flex items-center justify-end">
               {loading ? (
                 <div className="flex items-center justify-center w-10 h-10">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
