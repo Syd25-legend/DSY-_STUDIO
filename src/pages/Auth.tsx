@@ -3,16 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react"; // --- 1. IMPORT Eye and EyeOff ---
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { motion, AnimatePresence, Variants } from "framer-motion"; // --- FIX: Imported Variants type ---
+import { motion, AnimatePresence, Variants } from "framer-motion";
+import BouncyLoader from "@/components/BouncyLoader";
 
 const Auth = () => {
   const location = useLocation();
   const [isSignUp, setIsSignUp] = useState(location.state?.showSignUp || false);
   const [loading, setLoading] = useState(false);
+  const [showBouncyLoader, setShowBouncyLoader] = useState(true);
+  
+  // --- 2. ADD STATE FOR PASSWORD VISIBILITY ---
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,98 +37,59 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    const bouncyTimer = setTimeout(() => {
+      setShowBouncyLoader(false);
+    }, 800);
+    return () => clearTimeout(bouncyTimer);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (isSignUp) {
         if (formData.password !== formData.confirmPassword) {
-          toast({
-            title: "Error",
-            description: "Passwords do not match",
-            variant: "destructive"
-          });
+          toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
           setLoading(false);
           return;
         }
-
         const { error } = await signUp(formData.email, formData.password, formData.username);
         if (error) {
-          toast({
-            title: "Sign Up Error",
-            description: error.message,
-            variant: "destructive"
-          });
+          toast({ title: "Sign Up Error", description: error.message, variant: "destructive" });
         } else {
-          toast({
-            title: "Success",
-            description: "Please check your email to confirm your account",
-          });
+          toast({ title: "Success", description: "Please check your email to confirm your account", });
           setIsSignUp(false);
         }
       } else {
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
-          toast({
-            title: "Sign In Error",
-            description: error.message,
-            variant: "destructive"
-          });
+          toast({ title: "Sign In Error", description: error.message, variant: "destructive" });
         } else {
-          toast({
-            title: "Welcome back!",
-            description: "You have been signed in successfully",
-          });
+          toast({ title: "Welcome back!", description: "You have been signed in successfully", });
           navigate('/');
         }
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: "An unexpected error occurred", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // --- FIX: Added the Variants type to the constant ---
   const flipVariants: Variants = {
-    initial: {
-      rotateY: -90,
-      opacity: 0
-    },
-    animate: {
-      rotateY: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.2,
-        ease: "easeOut"
-      }
-    },
-    exit: {
-      rotateY: 90,
-      opacity: 0,
-      transition: {
-        duration: 0.2,
-        ease: "easeIn"
-      }
-    }
+    initial: { rotateY: -90, opacity: 0 },
+    animate: { rotateY: 0, opacity: 1, transition: { duration: 0.2, ease: "easeOut" } },
+    exit: { rotateY: 90, opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }
   };
-
-  
 
   return (
     <div className="bg-background">
+      <BouncyLoader isLoading={showBouncyLoader} />
       {/* Left Panel - Branding */}
       <div className="hidden lg:block lg:w-1/2 bg-gradient-hero fixed top-0 left-0 h-screen overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20" />
@@ -138,9 +106,9 @@ const Auth = () => {
           <div className="space-y-6">
             <motion.div whileHover={{ y: -2, boxShadow: "0 0 15px hsl(210 15% 70% / 0.3)" }} transition={{ duration: 0.3 }}>
               <Card className="gaming-card p-6 text-left">
-                <h3 className="text-lg font-semibold text-primary mb-2">Antim Sawari</h3>
+                <h3 className="text-lg font-semibold text-primary mb-2">Antim Yatra</h3>
                 <p className="text-sm text-muted-foreground">
-                  Our latest psychological horror masterpiece that will keep you on the edge of your seat.
+                  Our debut psychological horror masterpiece that will keep you on the edge of your seat.
                 </p>
               </Card>
             </motion.div>
@@ -186,28 +154,13 @@ const Auth = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <p className="text-center text-sm text-muted-foreground pt-2">
-                    {isSignUp
-                      ? "Join our community of creators and players."
-                      : "Welcome back to the DSY Studio community."}
-                  </p>
-
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {isSignUp && (
                       <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="username"
-                            name="username"
-                            type="text"
-                            placeholder="Enter your username"
-                            className="pl-10 border-primary/20 focus:border-primary/40"
-                            value={formData.username}
-                            onChange={handleInputChange}
-                            required
-                          />
+                          <Input id="username" name="username" type="text" placeholder="Enter your username" className="pl-10 border-primary/20 focus:border-primary/40" value={formData.username} onChange={handleInputChange} required />
                         </div>
                       </div>
                     )}
@@ -215,49 +168,60 @@ const Auth = () => {
                       <Label htmlFor="email">Email</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          className="pl-10 border-primary/20 focus:border-primary/40"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          required
-                        />
+                        <Input id="email" name="email" type="email" placeholder="Enter your email" className="pl-10 border-primary/20 focus:border-primary/40" value={formData.email} onChange={handleInputChange} required />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="password"
-                          name="password"
-                          type="password"
-                          placeholder="Enter your password"
-                          className="pl-10 border-primary/20 focus:border-primary/40"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          required
+                      <div className="relative flex items-center">
+                        <Lock className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          id="password" 
+                          name="password" 
+                          type={showPassword ? "text" : "password"} 
+                          placeholder="Enter your password" 
+                          className="pl-10 pr-10 border-primary/20 focus:border-primary/40" 
+                          value={formData.password} 
+                          onChange={handleInputChange} 
+                          required 
                         />
+                        {/* --- 3. ADD THE TOGGLE BUTTON --- */}
+                        {formData.password && (
+                          <button 
+                            type="button" 
+                            onClick={() => setShowPassword(prev => !prev)} 
+                            className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                          </button>
+                        )}
                       </div>
                     </div>
                     {isSignUp && (
                       <div className="space-y-2">
                         <Label htmlFor="confirmPassword">Confirm Password</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            placeholder="Confirm your password"
-                            className="pl-10 border-primary/20 focus:border-primary/40"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            required
+                        <div className="relative flex items-center">
+                          <Lock className="absolute left-3 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            id="confirmPassword" 
+                            name="confirmPassword" 
+                            type={showConfirmPassword ? "text" : "password"} 
+                            placeholder="Confirm your password" 
+                            className="pl-10 pr-10 border-primary/20 focus:border-primary/40" 
+                            value={formData.confirmPassword} 
+                            onChange={handleInputChange} 
+                            required 
                           />
+                          {/* --- 4. ADD THE TOGGLE BUTTON FOR CONFIRM PASSWORD --- */}
+                          {formData.confirmPassword && (
+                            <button 
+                              type="button" 
+                              onClick={() => setShowConfirmPassword(prev => !prev)} 
+                              className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showConfirmPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -266,22 +230,12 @@ const Auth = () => {
                     </Button>
                   </form>
                   <div className="text-center">
-                    <button
-                      type="button"
-                      onClick={() => setIsSignUp(!isSignUp)}
-                      className="text-sm text-primary hover:text-primary-glow transition-colors"
-                    >
-                      {isSignUp
-                        ? "Already have an account? Sign in"
-                        : "Don't have an account? Sign up"
-                      }
+                    <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-primary hover:text-primary-glow transition-colors">
+                      {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
                     </button>
                   </div>
                   <div className="text-center">
-                    <Link
-                      to="/"
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
+                    <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                       ← Back to Home
                     </Link>
                   </div>

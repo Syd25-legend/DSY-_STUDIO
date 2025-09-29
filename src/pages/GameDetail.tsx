@@ -1,5 +1,3 @@
-// src/pages/GameDetail.tsx
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,13 +13,14 @@ import {
   Cpu,
   Download,
   Share2,
-  ShoppingBag // New Icon
+  ShoppingBag
 } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth"; // Import useAuth
-import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/useAuth";
 import { Helmet } from "react-helmet-async";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
 
 interface SystemRequirementsDetails {
   os: string;
@@ -49,25 +48,67 @@ export interface Game {
     recommended?: SystemRequirementsDetails;
   };
   price: string;
-  image: string;
+  image: string | null;
   featured: boolean;
 }
+
+const fadeIn: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 }
+  },
+};
+
+// --- 1. NEW COMPONENT TO HANDLE RELEASE DATE LOGIC ---
+const ReleaseDateDisplay = ({ dateString }: { dateString: string | null }) => {
+  if (!dateString) {
+    return <span>TBA</span>;
+  }
+
+  const releaseDate = new Date(dateString);
+
+  // Check if the date string is a valid date
+  if (isNaN(releaseDate.getTime())) {
+    // If not a valid date, it's a string like "Coming Soon", so display it directly
+    return <span>{dateString}</span>;
+  }
+
+  // Get today's date with the time set to the start of the day for accurate comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const formattedDate = releaseDate.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  if (releaseDate > today) {
+    // If the release date is in the future
+    return <span>Releasing on {formattedDate}</span>;
+  } else {
+    // If the release date is today or in the past
+    return <span>{formattedDate}</span>;
+  }
+};
 
 
 const GameDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth(); // Get user from auth context
+  const { user } = useAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedMedia, setSelectedMedia] = useState(0);
-  const [hasPurchased, setHasPurchased] = useState(false); // State to track purchase
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   useEffect(() => {
     const fetchGameAndPurchaseStatus = async () => {
       if (!id) return;
       setLoading(true);
+      setHasPurchased(false);
       try {
-        // --- 1. Fetch Game Details ---
         const { data: gameData, error: gameError } = await supabase
           .from('games')
           .select('*')
@@ -77,7 +118,6 @@ const GameDetail = () => {
         if (gameError) throw gameError;
         setGame(gameData as Game);
 
-        // --- 2. Check Purchase Status if user is logged in ---
         if (user) {
           const { data: orderData, error: orderError } = await supabase
             .from('orders')
@@ -87,15 +127,13 @@ const GameDetail = () => {
             .limit(1)
             .single();
           
-          if (orderError && orderError.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine
+          if (orderError && orderError.code !== 'PGRST116') {
             throw orderError;
           }
-
           if (orderData) {
             setHasPurchased(true);
           }
         }
-
       } catch (error) {
         console.error("Error fetching game details:", error);
         setGame(null);
@@ -105,7 +143,7 @@ const GameDetail = () => {
     };
 
     fetchGameAndPurchaseStatus();
-  }, [id, user]); // Rerun effect if user logs in/out
+  }, [id, user]);
 
   const handleShare = async () => {
     try {
@@ -118,17 +156,7 @@ const GameDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8"><Skeleton className="h-12 w-3/4" /><Skeleton className="h-96 w-full" /></div>
-            <div className="space-y-6"><Skeleton className="h-48 w-full" /><Skeleton className="h-64 w-full" /></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <BouncyLoader isLoading={loading} />;
   }
 
   if (!game) {
@@ -172,7 +200,6 @@ const GameDetail = () => {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
@@ -183,8 +210,8 @@ const GameDetail = () => {
       
       <div className="container mx-auto px-4 pt-32 pb-16">
         <div className="mb-8"><Link to="/games"><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Games</Button></Link></div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
+        <motion.div className="grid grid-cols-1 lg:grid-cols-3 gap-8" variants={fadeIn} initial="hidden" animate="visible">
+          <motion.div className="lg:col-span-2 space-y-8" variants={fadeIn}>
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-4"><h1 className="text-3xl md:text-4xl font-bold gradient-text">{game.title}</h1><Badge className={getStatusColor(game.status)}>{game.status}</Badge></div>
               <p className="text-lg text-muted-foreground">{game.description}</p>
@@ -215,8 +242,8 @@ const GameDetail = () => {
                 </CardContent></Card>)}
               </div></TabsContent>
             </Tabs>
-          </div>
-          <div className="space-y-6">
+          </motion.div>
+          <motion.div className="space-y-6" variants={fadeIn}>
             <Card className="gaming-card"><CardHeader><div className="flex items-center justify-between"><CardTitle className="text-2xl font-bold">{game.price}</CardTitle><div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" onClick={handleShare}><Share2 className="h-5 w-5" /></Button>
             </div></div></CardHeader><CardContent className="space-y-4">
@@ -225,15 +252,19 @@ const GameDetail = () => {
             <Card className="gaming-card"><CardHeader><CardTitle>Game Information</CardTitle></CardHeader><CardContent className="space-y-4">
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between"><span className="text-muted-foreground">Developer:</span><span>{game.developer}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Release Date:</span><span>{new Date(game.releaseDate).toLocaleDateString()}</span></div>
+                {/* --- 2. REPLACE THE OLD RENDERING WITH THE NEW COMPONENT --- */}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Release Date:</span>
+                  <span className="text-right"><ReleaseDateDisplay dateString={game.releaseDate} /></span>
+                </div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Genre:</span><span>{game.genre}</span></div>
                 {game.rating > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Rating:</span><div className="flex items-center space-x-1"><Star className="w-4 h-4 text-yellow-400 fill-current" /><span>{game.rating}/5</span></div></div>}
               </div><Separator /><div>
                 <h4 className="font-medium mb-2 text-sm">Available Platforms:</h4>
                 <div className="flex flex-wrap gap-2">{game.platforms?.map((platform: string) => <Badge key={platform} variant="secondary">{platform}</Badge>)}</div>
               </div></CardContent></Card>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

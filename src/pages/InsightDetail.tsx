@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"; // --- NEW: Imported useCallback
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
-import { Calendar, Eye, MessageCircle, ArrowLeft, Pin, Heart, PlusCircle } from "lucide-react";
+import { Calendar, Eye, MessageCircle, ArrowLeft, Pin, PlusCircle } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
 
 interface Insight {
   id: string;
@@ -38,6 +39,15 @@ interface Comment {
   };
 }
 
+const fadeIn: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  },
+};
+
 const InsightDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -51,7 +61,6 @@ const InsightDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
 
-  // --- UPDATED: Wrapped fetchComments in useCallback to fix dependency warning ---
   const fetchComments = useCallback(async () => {
     if (!id) return;
     setCommentsLoading(true);
@@ -64,7 +73,6 @@ const InsightDetail = () => {
     if (error) {
       console.error('Error fetching comments:', error);
     } else {
-      // --- FIXED: Replaced 'any[]' with the specific 'Comment[]' type ---
       setComments((data as Comment[]) || []);
     }
     setCommentsLoading(false);
@@ -92,7 +100,6 @@ const InsightDetail = () => {
       await fetchComments();
     };
     
-    // --- UPDATED: Added fetchComments to the dependency array ---
     fetchInsightAndComments();
   }, [id, fetchComments]);
 
@@ -139,12 +146,7 @@ const InsightDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16"><Skeleton className="h-96 w-full max-w-4xl mx-auto" /></div>
-      </div>
-    );
+    return <BouncyLoader isLoading={loading} />;
   }
 
   if (!insight) {
@@ -163,7 +165,7 @@ const InsightDetail = () => {
     <div className="min-h-screen bg-gradient-hero">
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="max-w-4xl mx-auto">
+        <motion.div className="max-w-4xl mx-auto" variants={fadeIn} initial="hidden" animate="visible">
           <div className="mb-8">
             <Link to="/insights"><Button variant="outline" className="mb-6"><ArrowLeft className="mr-2 h-4 w-4" />Back to Insights</Button></Link>
             {insight.media_url && <div className="relative overflow-hidden rounded-lg mb-8"><img src={insight.media_url} alt={insight.title} className="w-full h-64 md:h-96 object-cover" /></div>}
@@ -174,7 +176,6 @@ const InsightDetail = () => {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1"><Calendar className="w-4 h-4" /><span>{new Date(insight.created_at).toLocaleDateString()}</span></div>
                   <div className="flex items-center space-x-1"><Eye className="w-4 h-4" /><span>{formatNumber(insight.views)} views</span></div>
-                  {/* <div className="flex items-center space-x-1"><Heart className="w-4 h-4" /><span>{formatNumber(insight.likes)} likes</span></div> */}
                 </div>
               </div>
               {insight.tags && insight.tags.length > 0 && <div className="flex flex-wrap gap-2">{insight.tags.map((tag) => <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>)}</div>}
@@ -185,7 +186,7 @@ const InsightDetail = () => {
             <CardHeader><CardTitle className="flex items-center justify-between"><span><MessageCircle className="mr-2 h-5 w-5 inline-block" />Comments ({comments.length})</span></CardTitle></CardHeader>
             <CardContent>
               {commentsLoading ? (
-                <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="flex space-x-4"><Skeleton className="h-10 w-10 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-12 w-full" /></div></div>)}</div>
+                 <p className="text-muted-foreground text-center py-4">Loading comments...</p>
               ) : comments.length > 0 ? (
                 <div className="space-y-6">
                   {comments.map((comment) => (
@@ -211,7 +212,7 @@ const InsightDetail = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // --- 1. IMPORT useRef ---
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,6 @@ import {
   Users,
   MessageCircle,
   BookOpen,
-  Star,
   ArrowRight,
   GamepadIcon,
   Zap,
@@ -28,10 +27,41 @@ import {
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Game } from "./GameDetail";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants, useInView } from "framer-motion"; // --- 2. IMPORT useInView ---
+
+const blurZoomInVariants: Variants = {
+  hidden: { scale: 0.9, filter: 'blur(8px)', opacity: 0 },
+  visible: {
+    scale: 1,
+    filter: 'blur(0px)',
+    opacity: 1,
+    transition: {
+      duration: 0.7,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const Index = () => {
   const [featuredGame, setFeaturedGame] = useState<Game | null>(null);
   const [isGameLoading, setIsGameLoading] = useState(true);
+  const [showBouncyLoader, setShowBouncyLoader] = useState(true);
+
+  // --- 3. SETUP REFS AND HOOKS FOR SCROLL DETECTION ---
+  const gamingHubRef = useRef(null);
+  const isGamingHubInView = useInView(gamingHubRef, { once: false });
+  const [showHeader, setShowHeader] = useState(true);
 
   const [stats, setStats] = useState({
     games: 1,
@@ -40,6 +70,18 @@ const Index = () => {
   });
 
   useEffect(() => {
+    // --- 4. LOGIC TO SHOW/HIDE HEADER BASED ON SCROLL POSITION ---
+    // If the gaming hub section is in view, we hide the header. Otherwise, we show it.
+    // This creates the slide up/down effect.
+    setShowHeader(!isGamingHubInView);
+  }, [isGamingHubInView]);
+
+
+  useEffect(() => {
+    const bouncyTimer = setTimeout(() => {
+      setShowBouncyLoader(false);
+    }, 1200);
+
     const fetchFeaturedGame = async () => {
       setIsGameLoading(true);
       try {
@@ -77,28 +119,9 @@ const Index = () => {
 
     fetchFeaturedGame();
     fetchStats();
-  }, []);
 
-  const studioInfo = {
-    description:
-      "As two lifelong friends and creators, DSY Studio is motivated by a love for games and narrative. Our focus is on indie game development, specializing in immersive horror games and rich interactive storytelling. We are creating worlds worth exploring, and our journey with our debut title, Antim Yatra, is only getting started.",
-    team: [
-      {
-        id: 1,
-        name: "Souhardyo Dey",
-        role: "Game Developer",
-        description:
-          "Materializes concepts into reality by creating and iterating on each aspect of the game.",
-      },
-      {
-        id: 2,
-        name: "Baibhab Paul",
-        role: "Game Designer",
-        description:
-          "Shapes the vision, the stories, and the mechanics into immersive experiences.",
-      },
-    ],
-  };
+    return () => clearTimeout(bouncyTimer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-hero">
@@ -109,25 +132,10 @@ const Index = () => {
           content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community."
         />
       </Helmet>
-      <style>{`
-        @keyframes blur-zoom-in {
-          0% {
-            transform: scale(0.9);
-            filter: blur(8px);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1);
-            filter: blur(0px);
-            opacity: 1;
-          }
-        }
-        .animate-blur-zoom-in {
-          animation: blur-zoom-in 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-      `}</style>
-
-      <GamingHeader />
+      
+      <BouncyLoader isLoading={showBouncyLoader} />
+      {/* --- 5. PASS THE `hidden` PROP TO THE HEADER --- */}
+      <GamingHeader hidden={!showHeader} />
 
       <section className="hero-section relative py-32 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
@@ -141,48 +149,46 @@ const Index = () => {
                   </p>
                 </Card>
               ) : featuredGame ? (
-                <Card className="gaming-card overflow-hidden group animate-blur-zoom-in">
-                  <div className="relative">
-                    <img
-                      src={featuredGame.image}
-                      alt={featuredGame.title}
-                      className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-accent text-accent-foreground">
-                        {featuredGame.status}
-                      </Badge>
+                <motion.div variants={blurZoomInVariants} initial="hidden" animate="visible">
+                  <Card className="gaming-card overflow-hidden group">
+                    <div className="relative">
+                      <img
+                        src={featuredGame.image!}
+                        alt={featuredGame.title}
+                        className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-accent text-accent-foreground">
+                          {featuredGame.status}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm font-medium">
-                        {featuredGame.rating}
-                      </span>
-                    </div>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-2xl gradient-text">
-                      {featuredGame.title}
-                    </CardTitle>
-                    <CardDescription className="text-base h-20 overflow-hidden">
-                      {featuredGame.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Link to={`/games/${featuredGame.id}`}>
-                      <Button variant="gaming" className="w-full group/btn">
-                        View Details
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+                    <CardHeader>
+                      <CardTitle className="text-2xl gradient-text">
+                        {featuredGame.title}
+                      </CardTitle>
+                      <CardDescription className="text-base h-20 overflow-hidden">
+                        {featuredGame.description}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Link to={`/games/${featuredGame.id}`}>
+                        <Button variant="gaming" className="w-full group/btn">
+                          View Details
+                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ) : (
-                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center animate-blur-zoom-in">
-                  <p className="text-muted-foreground">
-                    No featured game available right now.
-                  </p>
-                </Card>
+                 <motion.div variants={blurZoomInVariants} initial="hidden" animate="visible">
+                    <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center">
+                      <p className="text-muted-foreground">
+                        No featured game available right now.
+                      </p>
+                    </Card>
+                 </motion.div>
               )}
             </div>
 
@@ -195,9 +201,12 @@ const Index = () => {
                   </p>
                 </div>
               ) : (
-                // --- MODIFICATION START: Removed style={{ animationDelay: '0.3s' }} ---
-                <div className="space-y-8 animate-blur-zoom-in">
-                  {/* // --- MODIFICATION END --- */}
+                <motion.div
+                  className="space-y-8"
+                  variants={blurZoomInVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
                   <div className="text-center">
                     <div className="space-y-4">
                       <div className="flex items-center justify-center space-x-2 mb-4">
@@ -267,7 +276,7 @@ const Index = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
@@ -279,7 +288,8 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-24 relative">
+      {/* --- 6. ATTACH THE REF TO THE SECTION --- */}
+      <section className="py-24 relative" ref={gamingHubRef}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4 pb-4">
@@ -289,7 +299,13 @@ const Index = () => {
               Discover, play, and connect with our comprehensive gaming platform
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             {[
               {
                 icon: GamepadIcon,
@@ -320,63 +336,34 @@ const Index = () => {
                 link: "/blogs",
                 color: "text-accent",
               },
-            ].map((feature, index) => (
-              <Card
-                key={feature.title}
-                className="gaming-card group flex flex-col"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardHeader className="text-center">
-                  <feature.icon
-                    className={`w-12 h-12 mx-auto mb-4 ${feature.color} transition-transform group-hover:scale-110`}
-                  />
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {feature.title}
-                  </CardTitle>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="mt-auto">
-                  <Link to={feature.link}>
-                    <Button variant="gaming" className="w-full group/btn">
-                      Explore
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+            ].map((feature) => (
+              <motion.div key={feature.title} variants={blurZoomInVariants}>
+                <Card
+                  className="gaming-card group flex flex-col h-full"
+                >
+                  <CardHeader className="text-center">
+                    <feature.icon
+                      className={`w-12 h-12 mx-auto mb-4 ${feature.color} transition-transform group-hover:scale-110`}
+                    />
+                    <CardTitle className="group-hover:text-primary transition-colors">
+                      {feature.title}
+                    </CardTitle>
+                    <CardDescription>{feature.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="mt-auto">
+                    <Link to={feature.link}>
+                      <Button variant="gaming" className="w-full group/btn">
+                        Explore
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
-
-      {/* <section className="py-24 relative"> */}
-      {/* <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto space-y-8">
-            <h2 className="text-3xl md:text-4xl font-bold gradient-text pb-2">Ready to Begin Your Journey?</h2>
-            <p className="text-xl text-muted-foreground">Join our community to unlock exclusive content, participate in discussions, and be the first to know about new releases.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {/* <Link to="/auth"><Button variant="hero" size="hero" className="w-full sm:w-auto group"><Users className="mr-2 h-5 w-5" />Join Community</Button></Link>
-              <Link to="/games"><Button variant="neon" size="hero" className="w-full sm:w-auto"><Play className="mr-2 h-5 w-5" />Start Playing</Button></Link> */}
-      {/* </div>
-          </div>
-        </div> */}
-      {/* </section> */}
-
-      {/* <section className="py-24 relative border-t border-primary/20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16"><h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4">About Us</h2><p className="text-xl text-muted-foreground max-w-3xl mx-auto">{studioInfo.description}</p></div>
-          <div className="flex flex-col md:flex-row justify-center gap-12 lg:gap-24">
-            {studioInfo.team.map((member, index) => (
-              <div key={member.id} className="text-center flex flex-col items-center max-w-sm">
-               
-                <h3 className={`text-2xl font-bold ${index === 0 ? 'text-accent' : 'text-accent'}`}>{member.name}</h3>
-                <p className="text-lg text-secondary mb-2">{member.role}</p>
-                <p className="text-muted-foreground">{member.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
 
       <footer className="border-t border-primary/20 py-12 backdrop-blur-sm">
         <div className="container mx-auto px-4">

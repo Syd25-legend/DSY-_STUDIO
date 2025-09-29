@@ -6,6 +6,11 @@
 
 @layer base {
   :root {
+    /* === ADD FONT VARIABLES HERE === */
+   --font-heading: "Mozilla Headline", sans-serif; /* For main H1s and hero titles */
+    --font-subheading: "Mozilla Text", sans-serif;  /* For H2, H3, card titles, etc. */
+    --font-sans: "Nunito", sans-serif; 
+    
     /* Dark Gaming Theme */
     --background: 220 15% 6%;
     --foreground: 210 20% 90%;
@@ -25,7 +30,7 @@
     --secondary-foreground: 210 20% 90%;
     --secondary-glow: 220 15% 50%;
 
-    --muted: 220 15% 12%;
+    --muted: 210 15% 12%;
     --muted-foreground: 215 10% 55%;
 
     --accent: 25 85% 60%;
@@ -43,7 +48,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(210 15% 70%), hsl(220 10% 40%));
     --gradient-hero: linear-gradient(135deg, hsl(220 15% 6%) 0%, hsl(220 15% 10%) 50%, hsl(220 15% 6%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(220 15% 10%), hsl(220 15% 6%));
-    --gradient-gaming: linear-gradient(90deg, hsl(210 15% 70%) 0%, hsl(220 10% 40%) 50%, hsl(25 85% 60%) 100%);
+    --gradient-gaming: linear-gradient(90deg, hsl(210 15% 70%) 0%, hsl(217, 5%, 68%) 10%, hsl(25, 92%, 53%) 70%);
 
     /* Subtle Gaming Shadows */
     --shadow-neon: 0 0 15px hsl(210 15% 70% / 0.3);
@@ -119,6 +124,17 @@
 
   body {
     @apply bg-background text-foreground;
+    /* === APPLY DEFAULT FONT === */
+    @apply font-sans;
+  }
+  
+  /* === APPLY HEADING AND SUBHEADING FONTS === */
+  h1, .gradient-text {
+    @apply font-heading;
+  }
+  
+  h2, h3, h4, h5, h6 {
+    @apply font-subheading;
   }
 }
 

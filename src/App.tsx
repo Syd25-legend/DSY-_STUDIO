@@ -47,7 +47,7 @@ const App = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "DSY Studio",
+    "name": "DSY-Studio",
     "url": "https://www.studiodsy.xyz/"
   };
 

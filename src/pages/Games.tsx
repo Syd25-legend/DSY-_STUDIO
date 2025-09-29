@@ -1,17 +1,49 @@
-// src/pages/Games.tsx
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-// --- MODIFICATION: Tabs components are no longer needed ---
 import { Star, ShoppingBag } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Game } from "./GameDetail"; 
+import { Game } from "./GameDetail";
 import { Helmet } from 'react-helmet-async';
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
+
+const titleVariants: Variants = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      duration: 0.7,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+};
+
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
 
 const Games = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -37,8 +69,6 @@ const Games = () => {
     fetchGames();
   }, []);
 
-  // --- MODIFICATION: 'featuredGames' and 'allGames' variables are no longer needed ---
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Released": return "bg-accent text-accent-foreground";
@@ -57,7 +87,22 @@ const Games = () => {
       <Card className="gaming-card group overflow-hidden flex flex-col h-full">
         <Link to={`/games/${game.id}`} className="flex flex-col flex-grow">
           <div className="relative overflow-hidden">
-            <img src={game.image || "/api/placeholder/400/250"} alt={game.title} className="w-full h-48 object-cover transition-transform group-hover:scale-105" />
+            {/* --- MODIFICATION START: Conditional rendering for the image --- */}
+            {game.image ? (
+              <img 
+                src={game.image} 
+                alt={game.title} 
+                className="w-full h-48 object-cover transition-transform group-hover:scale-105" 
+              />
+            ) : (
+              <div className="w-full h-48 flex items-center justify-center bg-muted/50 border-b border-border">
+                <h3 className="text-lg font-heading text-center p-4 text-muted-foreground">
+                  {game.title}
+                </h3>
+              </div>
+            )}
+            {/* --- MODIFICATION END --- */}
+
             <div className="absolute top-3 left-3"><Badge className={getStatusColor(game.status)}>{game.status}</Badge></div>
             {game.rating > 0 && <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1"><Star className="w-3 h-3 text-yellow-400 fill-current" /><span className="text-xs font-medium">{game.rating}</span></div>}
           </div>
@@ -84,14 +129,7 @@ const Games = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero"><GamingHeader /><div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12"><Skeleton className="h-12 w-64 mx-auto mb-4" /><Skeleton className="h-6 w-96 mx-auto" /></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => <Card key={i} className="gaming-card"><Skeleton className="h-48 w-full" /><CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-10 w-full mt-2" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>)}
-        </div>
-      </div></div>
-    );
+    return <BouncyLoader isLoading={loading} />;
   }
 
   if (!games.length) {
@@ -106,22 +144,30 @@ const Games = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet><title>Our Games - DSY Studio</title><meta name="description" content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures." /></Helmet>
-      <style>{`html, body { overflow-x: hidden; } @keyframes zoom-in-settle { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } } .animate-zoom-in-settle { animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }`}</style>
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12 animate-zoom-in-settle">
+        <motion.div
+          className="text-center mb-12"
+          initial="hidden"
+          animate="visible"
+          variants={titleVariants}
+        >
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Our Games</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Discover our collection of immersive gaming experiences, from psychological horror to cyberpunk adventures.</p>
-        </div>
+        </motion.div>
         
-        {/* --- MODIFICATION: Replaced the Tabs component with a direct grid of all games --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {games.map((game, index) => (
-            <div key={game.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          initial="hidden"
+          animate="visible"
+          variants={gridContainerVariants}
+        >
+          {games.map((game) => (
+            <motion.div key={game.id} variants={cardVariants}>
               <GameCard game={game} />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
       </div>
     </div>

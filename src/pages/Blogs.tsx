@@ -1,15 +1,14 @@
-
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
 
 interface Blog {
   id: string;
@@ -24,6 +23,32 @@ interface Blog {
   featured: boolean;
   tags: string[];
 }
+
+const titleVariants: Variants = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
 
 const Blogs = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -81,7 +106,7 @@ const Blogs = () => {
   };
 
   const BlogCard = ({ blog, featured = false }: { blog: Blog, featured?: boolean }) => (
-    <Card className={`gaming-card group overflow-hidden ${featured ? 'md:col-span-2' : ''}`}>
+    <Card className={`gaming-card group overflow-hidden h-full flex flex-col ${featured ? 'md:col-span-2' : ''}`}>
       <div className="relative overflow-hidden">
         <img
           src={blog.image_url || "/api/placeholder/600/300"}
@@ -106,27 +131,13 @@ const Blogs = () => {
           {blog.excerpt}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-1">
+      <CardContent className="space-y-4 mt-auto">
+        <div className="flex flex-wrap gap-1 pb-3">
           {blog.tags?.map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs">
               {tag}
             </Badge>
           ))}
-        </div>
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              {/* <Calendar className="w-3 h-3" /> */}
-              {/* <span>{blog.published_at ? new Date(blog.published_at).toLocaleDateString() : 'TBA'}</span> */}
-            </div>
-          </div>
-          {blog.read_time && (
-            <div className="flex items-center space-x-1">
-              {/* <Clock className="w-3 h-3" />
-              <span>{blog.read_time}</span> */}
-            </div>
-          )}
         </div>
         <Link to={`/blogs/${blog.id}`}>
           <Button variant="gaming" className="w-full group/btn">
@@ -139,22 +150,10 @@ const Blogs = () => {
   );
 
   if (loading) {
-    // Skeleton loading state remains unchanged
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="text-center mb-12"><Skeleton className="h-12 w-64 mx-auto mb-4" /><Skeleton className="h-6 w-96 mx-auto" /></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => <Card key={i} className="gaming-card"><Skeleton className="h-48 w-full" /><CardHeader><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /></CardHeader><CardContent><Skeleton className="h-10 w-full" /></CardContent></Card>)}
-          </div>
-        </div>
-      </div>
-    );
+    return <BouncyLoader isLoading={loading} />;
   }
 
   if (!blogs.length) {
-    // Empty state remains unchanged
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
@@ -170,30 +169,16 @@ const Blogs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <style>{`
-        html, body {
-          overflow-x: hidden;
-        }
-        @keyframes zoom-in-settle {
-          0% { transform: scale(0.5); opacity: 0; }
-          70% { transform: scale(1.05); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-zoom-in-settle {
-          animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-      `}</style>
       <GamingHeader />
-      
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12 animate-zoom-in-settle">
+        <motion.div className="text-center mb-12" variants={titleVariants} initial="hidden" animate="visible">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-4">
             Developer Blogs
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto pb-1">
             Behind-the-scenes insights, development updates, and thoughts from the DSY Studio team.
           </p>
-        </div>
+        </motion.div>
 
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
@@ -217,11 +202,11 @@ const Blogs = () => {
         {searchTerm === "" && selectedCategory === "All" && featuredBlogs.length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-bold mb-6 gradient-text">Featured Articles</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {featuredBlogs.slice(0, 2).map((blog, index) => (
-                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><BlogCard blog={blog} featured /></div>
+            <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-6" variants={gridContainerVariants} initial="hidden" animate="visible">
+              {featuredBlogs.slice(0, 2).map((blog) => (
+                <motion.div key={blog.id} variants={cardVariants}><BlogCard blog={blog} featured /></motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -230,11 +215,11 @@ const Blogs = () => {
           {filteredBlogs.length === 0 ? (
             <div className="text-center py-12"><p className="text-muted-foreground">No blogs found matching your search.</p></div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBlogs.map((blog, index) => (
-                <div key={blog.id} className="animate-fade-in-scale" style={{ animationDelay: `${index * 0.1}s` }}><BlogCard blog={blog} /></div>
+            <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" variants={gridContainerVariants} initial="hidden" animate="visible">
+              {filteredBlogs.map((blog) => (
+                <motion.div key={blog.id} variants={cardVariants}><BlogCard blog={blog} /></motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

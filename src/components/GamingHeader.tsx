@@ -9,21 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, Loader2, Menu, X, ChevronRight, BookOpen, MessageCircle, Info, Mail } from "lucide-react";
+import { User, LogOut, Loader2, Menu, X, ChevronRight, BookOpen, MessageCircle, Info, Mail, Home, Gamepad2 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "../integrations/supabase/client";
+import { Separator } from "@/components/ui/separator";
 
-// Define types for fetched data
 type BlogTitle = { id: string; title: string; };
 type InsightTitle = { id: string; title: string; };
 
-// --- Sidebar Component ---
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: boolean) => void; }) => {
   const navigate = useNavigate();
-  // State to manage ONE active accordion instead of multiple booleans
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
-
   const [blogTitles, setBlogTitles] = useState<BlogTitle[]>([]);
   const [insightTitles, setInsightTitles] = useState<InsightTitle[]>([]);
 
@@ -46,18 +43,15 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
   };
 
   const NavLink = ({ to, children, icon: Icon }: { to: string; children: React.ReactNode; icon: React.ElementType }) => (
-    <Link to={to} onClick={() => handleNavigate(to)} className="flex items-center space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200">
+    <div onClick={() => handleNavigate(to)} className="flex items-center space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200 cursor-pointer">
       <Icon className="w-5 h-5" />
       <span className="font-medium">{children}</span>
-    </Link>
+    </div>
   );
 
   const AccordionLink = ({ name, title, children, icon: Icon }: { name: string; title: string; children: React.ReactNode; icon: React.ElementType }) => {
-    // Check if this accordion is the active one
     const isOpen = activeAccordion === name;
-
     const toggleAccordion = () => {
-      // If it's already open, close it. Otherwise, open it.
       setActiveAccordion(isOpen ? null : name);
     };
 
@@ -72,10 +66,8 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
             <ChevronRight className="w-5 h-5" />
           </motion.div>
         </div>
-        {/* AnimatePresence handles the exit animation (contraction) */}
         <AnimatePresence initial={false}>
           {isOpen && (
-            // This motion.div handles the expand and contract animation
             <motion.div
               key="content"
               initial="collapsed"
@@ -113,13 +105,12 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
           <motion.nav
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }} // Corrected exit animation for smooth slide-out
+            exit={{ x: "-100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="fixed top-0 left-0 h-full w-full max-w-xs bg-card border-r border-primary/20 z-50 flex flex-col p-4"
           >
             <div className="flex items-center justify-between pb-4 border-b border-primary/10">
               <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center space-x-2">
-                {/* Using your studio name from saved info */}
                 <img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-11 h-8" />
                 <span className="text-xl font-bold gradient-text">DSY Studio</span>
               </Link>
@@ -128,16 +119,25 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
               </Button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto space-y-2">
+              {/* --- MODIFICATION START --- */}
+              {/* This div wrapper will hide these links on medium screens and up */}
+              <div className="md:hidden">
+                <NavLink to="/" icon={Home}>Home</NavLink>
+                <NavLink to="/games" icon={Gamepad2}>Games</NavLink>
+                <Separator className="my-3 bg-primary/10" />
+              </div>
+              {/* --- MODIFICATION END --- */}
+
               <AccordionLink name="blogs" title="Blogs" icon={BookOpen}>
-                <Link to="/blogs" onClick={() => handleNavigate('/blogs')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10">All Blogs</Link>
+                <div onClick={() => handleNavigate('/blogs')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer">All Blogs</div>
                 {blogTitles.map(blog => (
-                  <Link key={blog.id} to={`/blogs/${blog.id}`} onClick={() => handleNavigate(`/blogs/${blog.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate">{blog.title}</Link>
+                  <div key={blog.id} onClick={() => handleNavigate(`/blogs/${blog.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer">{blog.title}</div>
                 ))}
               </AccordionLink>
               <AccordionLink name="insights" title="Insights" icon={MessageCircle}>
-                <Link to="/insights" onClick={() => handleNavigate('/insights')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10">All Insights</Link>
+                <div onClick={() => handleNavigate('/insights')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer">All Insights</div>
                 {insightTitles.map(insight => (
-                  <Link key={insight.id} to={`/insights/${insight.id}`} onClick={() => handleNavigate(`/insights/${insight.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate">{insight.title}</Link>
+                  <div key={insight.id} onClick={() => handleNavigate(`/insights/${insight.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer">{insight.title}</div>
                 ))}
               </AccordionLink>
               <NavLink to="/about" icon={Info}>About Us</NavLink>
@@ -150,22 +150,12 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
   );
 };
 
-
 // --- Main Header Component ---
-const GamingHeader = () => {
-  const [scrolled, setScrolled] = useState(false);
+const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
   const { user, signOut, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 100);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const navItems = [
     { label: "Home", path: "/" },
@@ -184,21 +174,31 @@ const GamingHeader = () => {
   return (
     <>
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <header className={`fixed top-0 left-0 right-0 z-30 transition-all duration-500 ${scrolled ? 'py-1' : 'py-3'}`}>
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-30 py-3"
+        variants={{
+          visible: { y: 0 },
+          hidden: { y: "-100%" },
+        }}
+        animate={hidden ? "hidden" : "visible"}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+      >
         <div className="container mx-auto px-4">
-          <div className="bg-card/80 backdrop-blur-md border border-primary/20 rounded-2xl px-6 py-2 grid grid-cols-3 items-center">
+          <div className="bg-card/80 backdrop-blur-md border border-primary/20 rounded-2xl px-6 py-2 grid grid-cols-2 md:grid-cols-3 items-center">
             <div className="flex items-center justify-start">
               <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
                 <Menu className="w-6 h-6 text-foreground" />
               </Button>
             </div>
-            <nav className="flex items-center justify-center space-x-6">
+            
+            <nav className="hidden md:flex items-center justify-center space-x-6">
               {navItems.map((item) => (
                 <Link key={item.path} to={item.path} className={`text-sm font-medium transition-colors ${isActivePath(item.path) ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'}`}>
                   {item.label}
                 </Link>
               ))}
             </nav>
+            
             <div className="flex items-center justify-end">
               {loading ? (
                 <div className="flex items-center justify-center w-10 h-10">
@@ -216,7 +216,6 @@ const GamingHeader = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 bg-card/95 backdrop-blur-md border border-primary/20">
                     <DropdownMenuItem onClick={handleProfileNavigation} className="cursor-pointer"><User className="mr-2 h-4 w-4" />Profile</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleProfileNavigation} className="cursor-pointer"><Settings className="mr-2 h-4 w-4" />Settings</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer"><LogOut className="mr-2 h-4 w-4" />Logout</DropdownMenuItem>
                   </DropdownMenuContent>
@@ -230,7 +229,7 @@ const GamingHeader = () => {
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
     </>
   );
 };

@@ -10,11 +10,9 @@ import {
 } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
 
-
-
-// Interface for a single blog post
 interface Blog {
   id: string;
   title: string;
@@ -29,6 +27,14 @@ interface Blog {
   tags: string[];
 }
 
+const fadeIn: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  },
+};
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -68,26 +74,10 @@ const BlogDetail = () => {
     return colors[category] || "bg-muted text-muted-foreground";
   };
 
-  // Loading state skeleton
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <GamingHeader />
-        <div className="container mx-auto px-4 pt-32 pb-16">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <Skeleton className="h-64 w-full rounded-lg" />
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-32 w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <BouncyLoader isLoading={loading} />;
   }
 
-  // Not found state
   if (!blog) {
     return (
       <div className="min-h-screen bg-gradient-hero">
@@ -108,14 +98,12 @@ const BlogDetail = () => {
     );
   }
 
-  // Main component render
   return (
     <div className="min-h-screen bg-gradient-hero">
       <GamingHeader />
       
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="max-w-4xl mx-auto">
-          {/* Blog Header */}
+        <motion.div className="max-w-4xl mx-auto" variants={fadeIn} initial="hidden" animate="visible">
           <div className="mb-8">
             <Link to="/blogs">
               <Button variant="outline" className="mb-6">
@@ -173,7 +161,6 @@ const BlogDetail = () => {
             </div>
           </div>
 
-          {/* Blog Content */}
           <Card className="gaming-card">
             <CardContent className="pt-8">
               <div className="prose prose-lg max-w-none">
@@ -183,7 +170,7 @@ const BlogDetail = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

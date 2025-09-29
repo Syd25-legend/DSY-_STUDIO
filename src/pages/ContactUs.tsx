@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GamingHeader from "@/components/GamingHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,39 @@ import { useToast } from "@/hooks/use-toast";
 import { Helmet } from 'react-helmet-async';
 import emailjs from '@emailjs/browser';
 import { supabase } from "../integrations/supabase/client";
+import BouncyLoader from "@/components/BouncyLoader";
+import { motion, Variants } from "framer-motion";
+
+const titleVariants: Variants = {
+  hidden: { scale: 0.5, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+};
+
+const cardVariants: Variants = {
+  hidden: { scale: 0.8, opacity: 0 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut", delay: 0.2 },
+  },
+};
 
 const ContactUs = () => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '', attachment: null as File | null, });
   const [isLoading, setIsLoading] = useState(false);
+  const [showBouncyLoader, setShowBouncyLoader] = useState(true);
+
+  useEffect(() => {
+    const bouncyTimer = setTimeout(() => {
+      setShowBouncyLoader(false);
+    }, 800);
+    return () => clearTimeout(bouncyTimer);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -54,6 +82,7 @@ const ContactUs = () => {
         attachmentUrl = publicUrl;
     }
     const templateParams = { name: formData.name, email: formData.email, subject: formData.subject, message: formData.message, attachment_url: attachmentUrl, };
+    // IMPORTANT: Replace with your actual EmailJS credentials
     const serviceId = "YOUR_SERVICE_ID";
     const templateId = "YOUR_TEMPLATE_ID";
     const publicKey = "YOUR_PUBLIC_KEY";
@@ -77,33 +106,30 @@ const ContactUs = () => {
         <title>Contact Us - DSY Studio</title>
         <meta name="description" content="Get in touch with DSY Studio. Send us a message, report a bug, or just say hello. We'd love to hear from you." />
       </Helmet>
-      {/* --- FIX 3: Added style block to prevent horizontal scrollbar --- */}
-      <style>{`
-        html, body { overflow-x: hidden; }
-        @keyframes zoom-in-settle { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-        .animate-zoom-in-settle { animation: zoom-in-settle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-      `}</style>
+      <BouncyLoader isLoading={showBouncyLoader} />
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <div className="text-center mb-12 animate-zoom-in-settle">
+        <motion.div className="text-center mb-12" variants={titleVariants} initial="hidden" animate="visible">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Get In Touch</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Have a question, a bug to report, or an idea to share? We'd love to hear from you.</p>
-        </div>
-        <Card className="gaming-card max-w-2xl mx-auto animate-fade-in-scale">
-            <CardHeader><CardTitle className="flex items-center"><Mail className="mr-2"/>Contact Form</CardTitle><CardDescription>Fill out the form below and we'll get back to you as soon as possible.</CardDescription></CardHeader>
-            <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" placeholder="Your Name" required value={formData.name} onChange={handleInputChange} /></div>
-                        <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" placeholder="your.email@example.com" required value={formData.email} onChange={handleInputChange} /></div>
-                    </div>
-                    <div className="space-y-2"><Label htmlFor="subject">Subject</Label><Input id="subject" placeholder="e.g., Bug Report for Antim Yatra" required value={formData.subject} onChange={handleInputChange} /></div>
-                    <div className="space-y-2"><Label htmlFor="message">Message</Label><Textarea id="message" placeholder="Describe your issue or question in detail..." className="min-h-[120px]" required value={formData.message} onChange={handleInputChange} /></div>
-                    <div className="space-y-2"><Label htmlFor="attachment" className="flex items-center"><Bug className="mr-2 h-4 w-4"/>Report a Bug/Glitch (Optional)</Label><div className="relative border border-dashed border-primary/30 rounded-lg p-4 text-center hover:border-primary/50 transition-colors"><Paperclip className="w-6 h-6 mx-auto mb-2 text-muted-foreground"/><p className="text-sm text-muted-foreground">{formData.attachment ? `File: ${formData.attachment.name}` : "Attach a screenshot or video (Max 5MB)"}</p><Input id="attachment" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,video/*" onChange={handleFileChange}/></div></div>
-                    <Button type="submit" variant="gaming" size="lg" className="w-full" disabled={isLoading}>{isLoading ? ( <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> ) : ( <><Send className="mr-2 h-4 w-4"/> Send Message</> )}</Button>
-                </form>
-            </CardContent>
-        </Card>
+        </motion.div>
+        <motion.div variants={cardVariants} initial="hidden" animate="visible">
+            <Card className="gaming-card max-w-2xl mx-auto">
+                <CardHeader><CardTitle className="flex items-center"><Mail className="mr-2"/>Contact Form</CardTitle><CardDescription>Fill out the form below and we'll get back to you as soon as possible.</CardDescription></CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" placeholder="Your Name" required value={formData.name} onChange={handleInputChange} /></div>
+                            <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" placeholder="your.email@example.com" required value={formData.email} onChange={handleInputChange} /></div>
+                        </div>
+                        <div className="space-y-2"><Label htmlFor="subject">Subject</Label><Input id="subject" placeholder="e.g., Bug Report for Antim Yatra" required value={formData.subject} onChange={handleInputChange} /></div>
+                        <div className="space-y-2"><Label htmlFor="message">Message</Label><Textarea id="message" placeholder="Describe your issue or question in detail..." className="min-h-[120px]" required value={formData.message} onChange={handleInputChange} /></div>
+                        <div className="space-y-2"><Label htmlFor="attachment" className="flex items-center"><Bug className="mr-2 h-4 w-4"/>Report a Bug/Glitch (Optional)</Label><div className="relative border border-dashed border-primary/30 rounded-lg p-4 text-center hover:border-primary/50 transition-colors"><Paperclip className="w-6 h-6 mx-auto mb-2 text-muted-foreground"/><p className="text-sm text-muted-foreground">{formData.attachment ? `File: ${formData.attachment.name}` : "Attach a screenshot or video (Max 5MB)"}</p><Input id="attachment" type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*,video/*" onChange={handleFileChange}/></div></div>
+                        <Button type="submit" variant="gaming" size="lg" className="w-full" disabled={isLoading}>{isLoading ? ( <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Sending...</> ) : ( <><Send className="mr-2 h-4 w-4"/> Send Message</> )}</Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </motion.div>
       </div>
     </div>
   );
