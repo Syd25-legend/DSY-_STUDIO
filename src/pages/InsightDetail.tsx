@@ -11,7 +11,8 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BouncyLoader from "@/components/BouncyLoader";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
+import { Filter } from 'bad-words'; // --- CORRECTED IMPORT ---
 
 interface Insight {
   id: string;
@@ -39,13 +40,13 @@ interface Comment {
   };
 }
 
-const fadeIn: Variants = {
+const fadeIn = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.6, ease: [0, 0, 0.58, 1] } 
+  }
 };
 
 const InsightDetail = () => {
@@ -60,6 +61,8 @@ const InsightDetail = () => {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
+
+  const filter = new Filter(); // Initialize the filter
 
   const fetchComments = useCallback(async () => {
     if (!id) return;
@@ -112,6 +115,17 @@ const InsightDetail = () => {
       toast({ title: "You must be logged in to comment.", variant: "destructive" });
       return;
     }
+    
+    // Profanity check
+    if (filter.isProfane(newComment.trim())) {
+      toast({
+        title: "Inappropriate language detected.",
+        description: "Please keep comments respectful.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase.from('comments').insert({ post_id: id, user_id: user.id, content: newComment.trim() });
@@ -165,7 +179,12 @@ const InsightDetail = () => {
     <div className="min-h-screen bg-gradient-hero">
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
-        <motion.div className="max-w-4xl mx-auto" variants={fadeIn} initial="hidden" animate="visible">
+        <motion.div 
+          className="max-w-4xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0, 0, 0.58, 1] }}
+        >
           <div className="mb-8">
             <Link to="/insights"><Button variant="outline" className="mb-6"><ArrowLeft className="mr-2 h-4 w-4" />Back to Insights</Button></Link>
             {insight.media_url && <div className="relative overflow-hidden rounded-lg mb-8"><img src={insight.media_url} alt={insight.title} className="w-full h-64 md:h-96 object-cover" /></div>}

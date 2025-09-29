@@ -3,12 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react"; // --- 1. IMPORT Eye and EyeOff ---
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import BouncyLoader from "@/components/BouncyLoader";
+import { Separator } from "@/components/ui/separator";
+
+const GoogleIcon = () => (
+    <img src="/Google__G__logo.svg.webp" alt="Google" className="mr-2 h-4 w-4" />
+);
 
 const Auth = () => {
   const location = useLocation();
@@ -16,7 +21,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [showBouncyLoader, setShowBouncyLoader] = useState(true);
   
-  // --- 2. ADD STATE FOR PASSWORD VISIBILITY ---
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -27,7 +31,7 @@ const Auth = () => {
     username: ""
   });
 
-  const { user, signUp, signIn } = useAuth();
+  const { user, signUp, signIn, signInWithGoogle, signInWithDiscord } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -90,7 +94,6 @@ const Auth = () => {
   return (
     <div className="bg-background">
       <BouncyLoader isLoading={showBouncyLoader} />
-      {/* Left Panel - Branding */}
       <div className="hidden lg:block lg:w-1/2 bg-gradient-hero fixed top-0 left-0 h-screen overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20" />
         <div className="relative z-10 flex flex-col justify-center h-full px-12 text-center">
@@ -104,7 +107,11 @@ const Auth = () => {
             </p>
           </div>
           <div className="space-y-6">
-            <motion.div whileHover={{ y: -2, boxShadow: "0 0 15px hsl(210 15% 70% / 0.3)" }} transition={{ duration: 0.3 }}>
+            <motion.div 
+              whileHover={{ y: -2, boxShadow: "0 0 15px hsl(210 15% 70% / 0.3)" }} 
+              transition={{ duration: 0.3 }}
+              className="rounded-lg" // --- FIX: Added rounded corners to match the card ---
+            >
               <Card className="gaming-card p-6 text-left">
                 <h3 className="text-lg font-semibold text-primary mb-2">Antim Yatra</h3>
                 <p className="text-sm text-muted-foreground">
@@ -112,7 +119,11 @@ const Auth = () => {
                 </p>
               </Card>
             </motion.div>
-            <motion.div whileHover={{ y: -2, boxShadow: "0 0 15px hsl(210 15% 70% / 0.3)" }} transition={{ duration: 0.3 }}>
+            <motion.div 
+              whileHover={{ y: -2, boxShadow: "0 0 15px hsl(210 15% 70% / 0.3)" }} 
+              transition={{ duration: 0.3 }}
+              className="rounded-lg" // --- FIX: Added rounded corners to match the card ---
+            >
               <Card className="gaming-card p-6 text-left">
                 <h3 className="text-lg font-semibold text-secondary mb-2">Community Driven</h3>
                 <p className="text-sm text-muted-foreground">
@@ -124,7 +135,6 @@ const Auth = () => {
         </div>
       </div>
 
-      {/* Right Panel - Auth Form */}
       <div className="w-full lg:w-1/2 lg:ml-[50%] flex items-center justify-center p-8 min-h-screen" style={{ perspective: '1200px' }}>
         <div className="w-full max-w-md">
           <div className="text-center mb-8 lg:hidden">
@@ -147,13 +157,10 @@ const Auth = () => {
                     {isSignUp ? "Create Account" : "Welcome Back"}
                   </CardTitle>
                   <CardDescription>
-                    {isSignUp
-                      ? "Join the DSY Studio community"
-                      : "Sign in to your account"
-                    }
+                    {isSignUp ? "Join the DSY Studio community" : "Sign in to your account"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {isSignUp && (
                       <div className="space-y-2">
@@ -175,23 +182,9 @@ const Auth = () => {
                       <Label htmlFor="password">Password</Label>
                       <div className="relative flex items-center">
                         <Lock className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          id="password" 
-                          name="password" 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="Enter your password" 
-                          className="pl-10 pr-10 border-primary/20 focus:border-primary/40" 
-                          value={formData.password} 
-                          onChange={handleInputChange} 
-                          required 
-                        />
-                        {/* --- 3. ADD THE TOGGLE BUTTON --- */}
+                        <Input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" className="pl-10 pr-10 border-primary/20 focus:border-primary/40" value={formData.password} onChange={handleInputChange} required />
                         {formData.password && (
-                          <button 
-                            type="button" 
-                            onClick={() => setShowPassword(prev => !prev)} 
-                            className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors"
-                          >
+                          <button type="button" onClick={() => setShowPassword(prev => !prev)} className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors">
                             {showPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
                           </button>
                         )}
@@ -202,23 +195,9 @@ const Auth = () => {
                         <Label htmlFor="confirmPassword">Confirm Password</Label>
                         <div className="relative flex items-center">
                           <Lock className="absolute left-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            id="confirmPassword" 
-                            name="confirmPassword" 
-                            type={showConfirmPassword ? "text" : "password"} 
-                            placeholder="Confirm your password" 
-                            className="pl-10 pr-10 border-primary/20 focus:border-primary/40" 
-                            value={formData.confirmPassword} 
-                            onChange={handleInputChange} 
-                            required 
-                          />
-                          {/* --- 4. ADD THE TOGGLE BUTTON FOR CONFIRM PASSWORD --- */}
+                          <Input id="confirmPassword" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="Confirm your password" className="pl-10 pr-10 border-primary/20 focus:border-primary/40" value={formData.confirmPassword} onChange={handleInputChange} required />
                           {formData.confirmPassword && (
-                            <button 
-                              type="button" 
-                              onClick={() => setShowConfirmPassword(prev => !prev)} 
-                              className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors"
-                            >
+                            <button type="button" onClick={() => setShowConfirmPassword(prev => !prev)} className="absolute right-3 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors">
                               {showConfirmPassword ? <EyeOff size={16}/> : <Eye size={16}/>}
                             </button>
                           )}
@@ -229,15 +208,40 @@ const Auth = () => {
                       {loading ? "Please wait..." : (isSignUp ? "Create Account" : "Sign In")}
                     </Button>
                   </form>
-                  <div className="text-center">
+                  
+                  <div className="relative">
+                    <Separator className="my-4" />
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Or continue with</span></div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={signInWithGoogle} 
+                      disabled={loading}
+                      className="transition-colors hover:bg-[#F4B400] hover:text-white hover:border-[#F4B400]"
+                    >
+                      <GoogleIcon /> Google
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={signInWithDiscord} 
+                      disabled={loading}
+                      className="transition-colors hover:bg-[#5865F2] hover:text-white hover:border-[#5865F2]"
+                    >
+                      <img src="/discord-logo.png" alt="Discord" className="mr-2 h-5 w-5" /> Discord
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center pt-2">
                     <button type="button" onClick={() => setIsSignUp(!isSignUp)} className="text-sm text-primary hover:text-primary-glow transition-colors">
                       {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
                     </button>
                   </div>
                   <div className="text-center">
-                    <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      ← Back to Home
-                    </Link>
+                    <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back to Home</Link>
                   </div>
                 </CardContent>
               </Card>

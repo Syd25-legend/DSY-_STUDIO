@@ -1,8 +1,19 @@
-import { useState, useEffect, ChangeEvent, useCallback } from "react";
+import { useState, useEffect, ChangeEvent, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import * as nsfwjs from 'nsfwjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 import GamingHeader from "@/components/GamingHeader";
 import { Button } from "@/components/ui/button";
@@ -10,17 +21,56 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Lock, Copy, Check, UploadCloud, Gamepad2 } from "lucide-react";
+import { User, Mail, Lock, Copy, Check, UploadCloud, Gamepad2, CropIcon, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
 
+function getCroppedImg(image: HTMLImageElement, crop: Crop): Promise<Blob> {
+  const canvas = document.createElement("canvas");
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    throw new Error('No 2d context');
+  }
+
+  const pixelRatio = window.devicePixelRatio;
+  canvas.width = crop.width * pixelRatio;
+  canvas.height = crop.height * pixelRatio;
+  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  ctx.imageSmoothingQuality = 'high';
+
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error('Canvas is empty'));
+        return;
+      }
+      resolve(blob);
+    }, 'image/png');
+  });
+}
 
 interface ProfileData {
   username: string;
   avatar_url: string;
 }
-
 interface PurchasedGame {
   created_at: string;
   games: {
@@ -38,7 +88,6 @@ const cardContainerVariants: Variants = {
     transition: { staggerChildren: 0.15, delayChildren: 0.2 },
   },
 };
-
 const cardItemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -60,7 +109,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | Blob | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [purchasedGames, setPurchasedGames] = useState<PurchasedGame[]>([]);
@@ -68,36 +117,31 @@ const Profile = () => {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  
+  const [imageToCrop, setImageToCrop] = useState<string | undefined>(undefined);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<Crop>(); // --- CORRECT STATE FOR PIXEL VALUES
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [isCheckingImage, setIsCheckingImage] = useState(false);
 
   const fetchProfileData = useCallback(async () => {
     if (!user) return;
     try {
       setLoading(true);
-
       const { data: profileData, error: profileError, status } = await supabase
-        .from('profiles')
-        .select(`username, avatar_url`)
-        .eq('id', user.id)
-        .single();
-
+        .from('profiles').select(`username, avatar_url`).eq('id', user.id).single();
       if (profileError && status !== 406) throw profileError;
       if (profileData) {
         setProfile(profileData);
         setUsername(profileData.username || '');
         setAvatarPreview(user.user_metadata.avatar_url);
       }
-
       const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select(`created_at, games ( id, title, image, genre )`)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
+        .from('orders').select(`created_at, games ( id, title, image, genre )`).eq('user_id', user.id).order('created_at', { ascending: false });
       if (ordersError) throw ordersError;
       if (ordersData) {
         setPurchasedGames(ordersData as PurchasedGame[]);
       }
-
     } catch (error) {
       console.error("Error fetching profile data:", error);
       toast({ title: "Error", description: "Could not fetch your profile data.", variant: "destructive" });
@@ -120,11 +164,64 @@ const Profile = () => {
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageToCrop(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
+    e.target.value = '';
   };
 
+  const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const initialCrop = centerCrop(makeAspectCrop({ unit: '%', width: 90 }, 1, width, height), width, height);
+    setCrop(initialCrop);
+  };
+  
+  // --- CORRECTED LOGIC FOR APPLYING THE CROP ---
+  const handleApplyCrop = async () => {
+    if (!imgRef.current || !completedCrop || !completedCrop.width || !completedCrop.height) {
+      toast({ title: "Error", description: "Could not apply crop. Please select a crop area.", variant: "destructive" });
+      return;
+    }
+
+    setIsCheckingImage(true);
+    // Pass the pixel-based 'completedCrop' state to the helper function
+    const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
+
+    try {
+      const model = await nsfwjs.load();
+      const image = document.createElement('img');
+      const objectUrl = URL.createObjectURL(croppedBlob);
+      image.src = objectUrl;
+      await new Promise(resolve => image.onload = resolve);
+      const predictions = await model.classify(image);
+      URL.revokeObjectURL(objectUrl);
+      const nsfwPrediction = predictions.find(p => (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') && p.probability > 0.7);
+
+      if (nsfwPrediction) {
+        toast({
+          title: "Inappropriate image detected.",
+          description: `Please upload a different profile picture. (Reason: ${nsfwPrediction.className})`,
+          variant: "destructive"
+        });
+        setImageToCrop(undefined);
+        return;
+      }
+      
+      setAvatarFile(croppedBlob);
+      setAvatarPreview(URL.createObjectURL(croppedBlob));
+      setImageToCrop(undefined);
+
+    } catch (error) {
+      console.error("Error during NSFW check:", error);
+      toast({ title: "Image check failed", description: "Could not verify the image. Please try another.", variant: "destructive" });
+    } finally {
+      setIsCheckingImage(false);
+    }
+  };
+  
   const handleProfileUpdate = async () => {
     if (!user) return;
     setIsUpdatingProfile(true);
@@ -132,9 +229,8 @@ const Profile = () => {
 
     try {
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const filePath = `${user.id}/${Math.random()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true });
+        const filePath = `${user.id}/${Date.now()}.png`;
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, avatarFile, { upsert: true, contentType: 'image/png' });
         if (uploadError) throw uploadError;
         const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
         newAvatarUrl = urlData.publicUrl;
@@ -205,7 +301,7 @@ const Profile = () => {
               <CardContent className="space-y-6">
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   <Avatar className="w-24 h-24 border-2 border-primary/40">
-                    <AvatarImage src={avatarPreview || user?.user_metadata?.avatar_url} />
+                    <AvatarImage src={avatarPreview || user?.user_metadata?.avatar_url} className="object-cover" />
                     <AvatarFallback className="bg-gradient-primary text-primary-foreground text-3xl">{username ? username.charAt(0).toUpperCase() : <User />}</AvatarFallback>
                   </Avatar>
                   <div className="relative">
@@ -234,10 +330,7 @@ const Profile = () => {
 
           <motion.div variants={cardItemVariants}>
             <Card className="gaming-card">
-              <CardHeader>
-                <CardTitle>My Games Library</CardTitle>
-                <CardDescription>All the games you've purchased from DSY Studio.</CardDescription>
-              </CardHeader>
+              <CardHeader><CardTitle>My Games Library</CardTitle><CardDescription>All the games you've purchased from DSY Studio.</CardDescription></CardHeader>
               <CardContent>
                 {purchasedGames.length > 0 ? (
                   <div className="space-y-4">
@@ -254,9 +347,7 @@ const Profile = () => {
                             </div>
                           </div>
                         </div>
-                        <Link to={`/games/${purchase.games.id}`}>
-                          <Button variant="outline">View Game</Button>
-                        </Link>
+                        <Link to={`/games/${purchase.games.id}`}><Button variant="outline">View Game</Button></Link>
                       </div>
                     ))}
                   </div>
@@ -265,17 +356,41 @@ const Profile = () => {
                     <Gamepad2 className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">Your Library is Empty</h3>
                     <p className="mt-1 text-sm text-muted-foreground">You haven't purchased any games yet.</p>
-                    <Button asChild variant="gaming" className="mt-4">
-                      <Link to="/games">Explore Games</Link>
-                    </Button>
+                    <Button asChild variant="gaming" className="mt-4"><Link to="/games">Explore Games</Link></Button>
                   </div>
                 )}
               </CardContent>
             </Card>
           </motion.div>
-
         </motion.div>
       </div>
+      
+      <Dialog open={!!imageToCrop} onOpenChange={(isOpen) => !isOpen && setImageToCrop(undefined)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Crop Your Avatar</DialogTitle></DialogHeader>
+          {imageToCrop && (
+            <ReactCrop 
+              crop={crop} 
+              onChange={(_, percentCrop) => setCrop(percentCrop)} 
+              onComplete={(c) => setCompletedCrop(c)} // CORRECT: Captures final pixel values
+              aspect={1} 
+              circularCrop
+            >
+              <img ref={imgRef} src={imageToCrop} alt="Image to crop" onLoad={onImageLoad} style={{ maxHeight: '70vh' }}/>
+            </ReactCrop>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImageToCrop(undefined)} disabled={isCheckingImage}>Cancel</Button>
+            <Button onClick={handleApplyCrop} variant="gaming" disabled={isCheckingImage}>
+              {isCheckingImage ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Checking...</>
+              ) : (
+                <><CropIcon className="mr-2 h-4 w-4" /> Apply Crop</>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

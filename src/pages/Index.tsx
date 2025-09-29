@@ -30,11 +30,10 @@ import { Game } from "./GameDetail";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants, useInView } from "framer-motion"; // --- 2. IMPORT useInView ---
 
-const blurZoomInVariants: Variants = {
-  hidden: { scale: 0.9, filter: 'blur(8px)', opacity: 0 },
+const fadeInScaleVariants: Variants = {
+  hidden: { scale: 0.95, opacity: 0 },
   visible: {
     scale: 1,
-    filter: 'blur(0px)',
     opacity: 1,
     transition: {
       duration: 0.7,
@@ -149,7 +148,7 @@ const Index = () => {
                   </p>
                 </Card>
               ) : featuredGame ? (
-                <motion.div variants={blurZoomInVariants} initial="hidden" animate="visible">
+                <motion.div variants={fadeInScaleVariants} initial="hidden" animate="visible">
                   <Card className="gaming-card overflow-hidden group">
                     <div className="relative">
                       <img
@@ -182,7 +181,7 @@ const Index = () => {
                   </Card>
                 </motion.div>
               ) : (
-                 <motion.div variants={blurZoomInVariants} initial="hidden" animate="visible">
+                 <motion.div variants={fadeInScaleVariants} initial="hidden" animate="visible">
                     <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center">
                       <p className="text-muted-foreground">
                         No featured game available right now.
@@ -203,7 +202,7 @@ const Index = () => {
               ) : (
                 <motion.div
                   className="space-y-8"
-                  variants={blurZoomInVariants}
+                  variants={fadeInScaleVariants}
                   initial="hidden"
                   animate="visible"
                 >
@@ -337,7 +336,7 @@ const Index = () => {
                 color: "text-accent",
               },
             ].map((feature) => (
-              <motion.div key={feature.title} variants={blurZoomInVariants}>
+              <motion.div key={feature.title} variants={fadeInScaleVariants}>
                 <Card
                   className="gaming-card group flex flex-col h-full"
                 >
@@ -366,102 +365,117 @@ const Index = () => {
       </section>
 
       <footer className="border-t border-primary/20 py-12 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <img
-                  src="/dsylogo1.png"
-                  alt="DSY Studio Logo"
-                  className="w-8 h-6"
-                />
-                <span className="text-lg font-bold gradient-text">
-                  DSY Studio
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Creating immersive gaming experiences.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Games</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    to="/games"
-                    className="hover:text-primary transition-colors"
-                  >
-                    All Games
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Community</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    to="/insights"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Discussions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/blogs"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Developer Blog
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/auth"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Join Us
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
-              <div className="flex space-x-4">
-                <a
-                  href="https://www.instagram.com/dsystudio_/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-[#C13584] transition-colors duration-300"
-                >
-                  <Instagram className="w-6 h-6" />
-                </a>
-                <a
-                  href="https://www.youtube.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-[#FF0000] transition-colors duration-300"
-                >
-                  <Youtube className="w-6 h-6" />
-                </a>
-                <a
-                  href="https://www.github.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-[#33b249] transition-colors duration-300"
-                >
-                  <Github className="w-6 h-6" />
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-primary/20 mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>
-              &copy; {new Date().getFullYear()} DSY Studio. All rights reserved.
-            </p>
-          </div>
+  <div className="container mx-auto px-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      {/* Column 1: DSY Studio Info (Unchanged) */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <img
+            src="/dsylogo1.png"
+            alt="DSY Studio Logo"
+            className="w-8 h-6"
+          />
+          <span className="text-lg font-bold gradient-text">
+            DSY Studio
+          </span>
         </div>
-      </footer>
+        <p className="text-sm text-muted-foreground">
+          Creating immersive gaming experiences.
+        </p>
+      </div>
+
+      {/* Column 2: Policy (As requested) */}
+      <div>
+        <h4 className="font-semibold mb-4">Policy</h4>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li>
+            <Link
+              to="/privacy-policy"
+              className="hover:text-primary transition-colors"
+            >
+              Privacy Policy
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/terms-and-conditions"
+              className="hover:text-primary transition-colors"
+            >
+              Terms & Conditions
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/refund-policy"
+              className="hover:text-primary transition-colors"
+            >
+              Refund Policy
+            </Link>
+          </li>
+        </ul>
+      </div>
+
+      {/* Column 3: New Community Links */}
+      <div>
+        <h4 className="font-semibold mb-4">Community</h4>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          {/* NOTE: Replace the "#" with your actual profile URLs */}
+          <li>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              ArtStation
+            </a>
+          </li>
+          <li>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              Sketchfab
+            </a>
+          </li>
+          <li>
+            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              Patreon
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      {/* Column 4: Connect (Unchanged) */}
+      <div>
+        <h4 className="font-semibold mb-4">Connect</h4>
+        <div className="flex space-x-4">
+          <a
+            href="https://www.instagram.com/dsystudio_/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-[#C13584] transition-colors duration-300"
+          >
+            <Instagram className="w-6 h-6" />
+          </a>
+          <a
+            href="https://www.youtube.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-[#FF0000] transition-colors duration-300"
+          >
+            <Youtube className="w-6 h-6" />
+          </a>
+          <a
+            href="https://www.github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-[#33b249] transition-colors duration-300"
+          >
+            <Github className="w-6 h-6" />
+          </a>
+        </div>
+      </div>
+    </div>
+    <div className="border-t border-primary/20 mt-8 pt-8 text-center text-sm text-muted-foreground">
+      <p>
+        &copy; {new Date().getFullYear()} DSY Studio. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
     </div>
   );
 };

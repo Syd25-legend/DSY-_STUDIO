@@ -9,7 +9,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import RouteChangeTracker from "./components/RouteChangeTracker";
 import { Helmet } from 'react-helmet-async';
 
-// Import all your page components
+// Import all page components
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -22,12 +22,16 @@ import InsightDetail from "./pages/InsightDetail";
 import NotFound from "./pages/NotFound";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
-import Payment from "./pages/Payment"; // --- 1. IMPORT THE NEW PAYMENT PAGE ---
+import Payment from "./pages/Payment";
+
+// --- 1. IMPORT THE NEW POLICY PAGES ---
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import RefundPolicy from "./pages/RefundPolicy";
 
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-hero flex items-center justify-center">
@@ -35,11 +39,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-
   return <>{children}</>;
 };
 
@@ -77,9 +79,13 @@ const App = () => {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/contact" element={<ContactUs />} />
        
+        {/* --- 2. ADD ROUTES FOR POLICY PAGES --- */}
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+
         {/* --- PROTECTED ROUTES --- */}
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        {/* --- 2. ADD THE NEW PAYMENT ROUTE --- */}
         <Route path="/payment/:id" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
 
         <Route path="*" element={<NotFound />} />
