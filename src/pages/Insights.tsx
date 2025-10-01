@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
+import { Helmet } from 'react-helmet-async';
 
 interface Insight {
   id: string;
@@ -161,6 +162,11 @@ const Insights = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Helmet>
+        <title>Community Insights | DSY Studio</title>
+        <meta name="description" content="Join discussions, share your game insights, and connect with fellow gamers and the developers at DSY Studio." />
+        <link rel="canonical" href="https://www.studiodsy.xyz/insights" />
+      </Helmet>
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
         <motion.div className="text-center mb-12" variants={titleVariants} initial="hidden" animate="visible">

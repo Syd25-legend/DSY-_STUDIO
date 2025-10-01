@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import BouncyLoader from "@/components/BouncyLoader";
 import { Separator } from "@/components/ui/separator";
+import { Helmet } from 'react-helmet-async';
 
 const GoogleIcon = () => (
     <img src="/Google__G__logo.svg.webp" alt="Google" className="mr-2 h-4 w-4" />
@@ -134,7 +135,10 @@ const Auth = () => {
           </div>
         </div>
       </div>
-
+<Helmet>
+  <title>Account | DSY Studio</title>
+  <meta name="robots" content="noindex, nofollow" />
+</Helmet>
       <div className="w-full lg:w-1/2 lg:ml-[50%] flex items-center justify-center p-8 min-h-screen" style={{ perspective: '1200px' }}>
         <div className="w-full max-w-md">
           <div className="text-center mb-8 lg:hidden">

@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, ShoppingBag } from "lucide-react";
+import { Star, ShoppingBag, Download } from "lucide-react"; // --- 1. IMPORT Download ICON ---
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Game } from "./GameDetail";
 import { Helmet } from 'react-helmet-async';
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth"; // --- 2. IMPORT useAuth HOOK ---
 
 const titleVariants: Variants = {
   hidden: { scale: 0.5, opacity: 0 },
@@ -40,7 +41,7 @@ const cardVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.5,
-      ease: "easeOut",
+      ease: [0.25, 0.46, 0.45, 0.94], // Using a smoother ease
     },
   },
 };
@@ -48,26 +49,40 @@ const cardVariants: Variants = {
 const Games = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); // --- 3. GET THE CURRENT USER ---
+  const [purchasedGameIds, setPurchasedGameIds] = useState<Set<string>>(new Set()); // --- 4. NEW STATE FOR PURCHASED GAMES ---
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchGamesAndPurchases = async () => {
       try {
-        const { data, error } = await supabase.from('games').select('*').order('featured', { ascending: false });
-        if (error) {
-          console.error('Error fetching games:', error);
-          setGames([]);
-        } else {
-          setGames((data as Game[]) || []);
+        // Fetch all games (no change here)
+        const { data: gamesData, error: gamesError } = await supabase.from('games').select('*').order('featured', { ascending: false });
+        if (gamesError) throw gamesError;
+        setGames((gamesData as Game[]) || []);
+
+        // --- 5. NEW: FETCH USER'S PURCHASES IF LOGGED IN ---
+        if (user) {
+          const { data: ordersData, error: ordersError } = await supabase
+            .from('orders')
+            .select('game_id') // Only fetch the game IDs
+            .eq('user_id', user.id);
+
+          if (ordersError) throw ordersError;
+          
+          // Store the purchased game IDs in a Set for efficient lookup
+          const ids = new Set(ordersData.map(order => order.game_id));
+          setPurchasedGameIds(ids);
         }
+
       } catch (error) {
-        console.error('Error fetching games:', error);
+        console.error('Error fetching data:', error);
         setGames([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchGames();
-  }, []);
+    fetchGamesAndPurchases();
+  }, [user]); // Re-run this effect if the user logs in or out
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,7 +94,8 @@ const Games = () => {
     }
   };
 
-  const GameCard = ({ game }: { game: Game }) => {
+  // --- 6. UPDATE GameCard TO ACCEPT a `hasPurchased` PROP ---
+  const GameCard = ({ game, hasPurchased }: { game: Game, hasPurchased: boolean }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const tagsToShow = isExpanded ? game.tags : game.tags?.slice(0, 3);
 
@@ -87,7 +103,6 @@ const Games = () => {
       <Card className="gaming-card group overflow-hidden flex flex-col h-full">
         <Link to={`/games/${game.id}`} className="flex flex-col flex-grow">
           <div className="relative overflow-hidden">
-            {/* --- MODIFICATION START: Conditional rendering for the image --- */}
             {game.image ? (
               <img 
                 src={game.image} 
@@ -101,8 +116,6 @@ const Games = () => {
                 </h3>
               </div>
             )}
-            {/* --- MODIFICATION END --- */}
-
             <div className="absolute top-3 left-3"><Badge className={getStatusColor(game.status)}>{game.status}</Badge></div>
             {game.rating > 0 && <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1"><Star className="w-3 h-3 text-yellow-400 fill-current" /><span className="text-xs font-medium">{game.rating}</span></div>}
           </div>
@@ -117,12 +130,23 @@ const Games = () => {
             </div>
           </CardContent>
         </Link>
+
+        {/* --- 7. CONDITIONAL BUTTON RENDERING --- */}
         <div className="p-6 pt-0 mt-auto">
-           <Link to={`/payment/${game.id}`} className="mt-auto">
-            <Button variant="outline" className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground">
-              <ShoppingBag className="mr-2 h-4 w-4" /> Buy Now - {game.price}
-            </Button>
-          </Link>
+          {hasPurchased ? (
+            // NOTE: The href should ideally be dynamic from your 'games' table
+            <a href="https://syd-25.itch.io/antim-yatra" target="_blank" rel="noopener noreferrer">
+              <Button variant="gaming" className="w-full">
+                <Download className="mr-2 h-4 w-4" /> Download
+              </Button>
+            </a>
+          ) : (
+            <Link to={`/payment/${game.id}`} className="mt-auto">
+              <Button variant="outline" className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground">
+                <ShoppingBag className="mr-2 h-4 w-4" /> Buy Now - {game.price}
+              </Button>
+            </Link>
+          )}
         </div>
       </Card>
     );
@@ -143,7 +167,11 @@ const Games = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <Helmet><title>Our Games - DSY Studio</title><meta name="description" content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures." /></Helmet>
+      <Helmet>
+  <title>Our Games | DSY Studio</title>
+  <meta name="description" content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures." />
+  <link rel="canonical" href="https://www.studiodsy.xyz/games" />
+</Helmet>
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
         <motion.div
@@ -162,9 +190,13 @@ const Games = () => {
           animate="visible"
           variants={gridContainerVariants}
         >
+          {/* --- 8. PASS THE hasPurchased PROP TO EACH CARD --- */}
           {games.map((game) => (
             <motion.div key={game.id} variants={cardVariants}>
-              <GameCard game={game} />
+              <GameCard 
+                game={game} 
+                hasPurchased={purchasedGameIds.has(game.id)} 
+              />
             </motion.div>
           ))}
         </motion.div>

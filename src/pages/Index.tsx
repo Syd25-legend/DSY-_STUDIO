@@ -125,12 +125,25 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
-        <title>DSY Studio - Indie Game Development Studio</title>
-        <meta
-          name="description"
-          content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community."
-        />
-      </Helmet>
+  <title>DSY Studio | Indie Game Development</title>
+  <meta name="description" content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community." />
+  <link rel="canonical" href="https://www.studiodsy.xyz/" />
+  <script type="application/ld+json">{`
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DSY Studio",
+      "url": "https://www.studiodsy.xyz/",
+      "logo": "https://www.studiodsy.xyz/dsylogo1.png",
+      "description": "DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds and immersive experiences.",
+      "sameAs": [
+        "https://www.instagram.com/dsystudio_/",
+        "https://www.artstation.com/studiodsy",
+        "https://sketchfab.com/studiodsy"
+      ]
+    }
+  `}</script>
+</Helmet>
       
       <BouncyLoader isLoading={showBouncyLoader} />
       {/* --- 5. PASS THE `hidden` PROP TO THE HEADER --- */}
@@ -421,17 +434,17 @@ const Index = () => {
         <ul className="space-y-2 text-sm text-muted-foreground">
           {/* NOTE: Replace the "#" with your actual profile URLs */}
           <li>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+            <a href="https://www.artstation.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
               ArtStation
             </a>
           </li>
           <li>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+            <a href="https://sketchfab.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
               Sketchfab
             </a>
           </li>
           <li>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+            <a href="https://www.patreon.com/c/DSYStudio" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
               Patreon
             </a>
           </li>

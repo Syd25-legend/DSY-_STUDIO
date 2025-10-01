@@ -65,9 +65,10 @@ const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
-        <title>About Us - DSY Studio</title>
-        <meta name="description" content="Meet the team behind DSY Studio. Learn about our passion for creating immersive horror games and rich interactive storytelling." />
-      </Helmet>
+  <title>About Us | DSY Studio</title>
+  <meta name="description" content="Meet the team behind DSY Studio. Learn about our passion for creating immersive horror games and rich interactive storytelling." />
+  <link rel="canonical" href="https://www.studiodsy.xyz/about" />
+</Helmet>
       <BouncyLoader isLoading={showBouncyLoader} />
       <GamingHeader />
 

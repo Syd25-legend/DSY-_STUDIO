@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion } from "framer-motion";
-import { Filter } from 'bad-words'; // --- CORRECTED IMPORT ---
+// --- STEP 1: IMPORT THE NEW PACKAGE ---
+import {Filter} from 'bad-words';
 
 interface Insight {
   id: string;
@@ -62,7 +63,22 @@ const InsightDetail = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
 
-  const filter = new Filter(); // Initialize the filter
+  const [blockedPhrases, setBlockedPhrases] = useState<string[]>([]);
+
+  useEffect(() => {
+    const initializeFilter = async () => {
+      try {
+        const response = await fetch('/badwords.txt');
+        const text = await response.text();
+        const phrases = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        setBlockedPhrases(phrases.map(phrase => phrase.toLowerCase()));
+      } catch (error) {
+        console.error("Could not load profanity filter file:", error);
+      }
+    };
+    
+    initializeFilter();
+  }, []);
 
   const fetchComments = useCallback(async () => {
     if (!id) return;
@@ -80,7 +96,6 @@ const InsightDetail = () => {
     }
     setCommentsLoading(false);
   }, [id]);
-
 
   useEffect(() => {
     const fetchInsightAndComments = async () => {
@@ -106,6 +121,7 @@ const InsightDetail = () => {
     fetchInsightAndComments();
   }, [id, fetchComments]);
 
+  // --- STEP 2: UPDATE THE SUBMIT HANDLER WITH THE DUAL-FILTER LOGIC ---
   const handleCommentSubmit = async () => {
     if (!newComment.trim()) {
       toast({ title: "Comment cannot be empty.", variant: "destructive" });
@@ -116,27 +132,61 @@ const InsightDetail = () => {
       return;
     }
     
-    // Profanity check
-    if (filter.isProfane(newComment.trim())) {
+    const commentToSubmit = newComment.trim();
+
+    // 1. Configure and run the 'bad-words' filter first
+    const filter = new Filter();
+    // Exclude any words from your custom badwords.txt from this initial check.
+    // This gives your custom list priority.
+    if (blockedPhrases.length > 0) {
+      filter.removeWords(...blockedPhrases);
+    }
+    
+    // Check with the npm package (minus your custom words)
+    if (filter.isProfane(commentToSubmit)) {
       toast({
         title: "Inappropriate language detected.",
         description: "Please keep comments respectful.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // 2. Now, run your custom 'badwords.txt' check
+    const commentTextLower = commentToSubmit.toLowerCase();
+    const isCustomProfane = blockedPhrases.some(phrase => commentTextLower.includes(phrase));
+
+    if (isCustomProfane) {
+      toast({
+        title: "Inappropriate language detected.",
+        description: "Your comment contains a blocked phrase.",
         variant: "destructive"
       });
       return;
     }
 
+    // 3. If all checks pass, post the comment
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('comments').insert({ post_id: id, user_id: user.id, content: newComment.trim() });
+      const { error } = await supabase.from('comments').insert({ 
+        post_id: id, 
+        user_id: user.id, 
+        content: commentToSubmit 
+      });
+
       if (error) throw error;
+      
       toast({ title: "Comment posted successfully!" });
       setNewComment("");
       setShowCommentForm(false);
       await fetchComments();
     } catch (error) {
       console.error("Error posting comment:", error);
-      toast({ title: "Failed to post comment.", description: "Please try again.", variant: "destructive" });
+      toast({ 
+        title: "Failed to post comment.", 
+        description: "Please try again later.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -220,7 +270,7 @@ const InsightDetail = () => {
                   showCommentForm ? (
                     <div className="space-y-4">
                       <Textarea placeholder="Write your comment..." value={newComment} onChange={(e) => setNewComment(e.target.value)} className="min-h-[100px] border-primary/20 focus:border-primary/40" />
-                      <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setShowCommentForm(false)} disabled={isSubmitting}>Cancel</Button><Button variant="gaming" onClick={handleCommentSubmit} disabled={isSubmitting}>{isSubmitting ? "Posting..." : "Post Comment"}</Button></div>
+                      <div className="flex justify-end gap-2"><Button variant="ghost" onClick={() => setShowCommentForm(false)} disabled={isSubmitting}>Cancel</Button><Button variant="gaming" onClick={handleCommentSubmit} disabled={isSubmitting || !blockedPhrases.length}>{isSubmitting ? "Posting..." : "Post Comment"}</Button></div>
                     </div>
                   ) : (
                     <Button variant="outline" className="w-full" onClick={() => setShowCommentForm(true)}><PlusCircle className="mr-2 h-4 w-4" />Add a comment</Button>

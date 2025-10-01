@@ -9,6 +9,7 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
+import { Helmet } from 'react-helmet-async';
 
 interface Blog {
   id: string;
@@ -131,6 +132,7 @@ const Blogs = () => {
           {blog.excerpt}
         </CardDescription>
       </CardHeader>
+    
       <CardContent className="space-y-4 mt-auto">
         <div className="flex flex-wrap gap-1 pb-3">
           {blog.tags?.map((tag) => (
@@ -156,6 +158,11 @@ const Blogs = () => {
   if (!blogs.length) {
     return (
       <div className="min-h-screen bg-gradient-hero">
+          <Helmet>
+  <title>Developer Blogs | DSY Studio</title>
+  <meta name="description" content="Behind-the-scenes insights, development updates, and thoughts on game design from the DSY Studio team." />
+  <link rel="canonical" href="https://www.studiodsy.xyz/blogs" />
+</Helmet>
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">

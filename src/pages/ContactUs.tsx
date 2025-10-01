@@ -12,6 +12,8 @@ import emailjs from '@emailjs/browser';
 import { supabase } from "../integrations/supabase/client";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
+import { useAuth } from '@/hooks/useAuth';
+import * as nsfwjs from 'nsfwjs'; // --- 1. IMPORT NSFWJS ---
 
 const titleVariants: Variants = {
   hidden: { scale: 0.5, opacity: 0 },
@@ -33,6 +35,7 @@ const cardVariants: Variants = {
 
 const ContactUs = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '', attachment: null as File | null, });
   const [isLoading, setIsLoading] = useState(false);
   const [showBouncyLoader, setShowBouncyLoader] = useState(true);
@@ -43,6 +46,12 @@ const ContactUs = () => {
     }, 800);
     return () => clearTimeout(bouncyTimer);
   }, []);
+
+  useEffect(() => {
+    if (user && !formData.email) {
+      setFormData(prev => ({ ...prev, email: user.email || '' }));
+    }
+  }, [user, formData.email]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -60,6 +69,7 @@ const ContactUs = () => {
     }
   };
 
+  // --- 2. UPDATED handleSubmit FUNCTION WITH NSFW CHECK ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
@@ -68,8 +78,46 @@ const ContactUs = () => {
     }
     setIsLoading(true);
     let attachmentUrl = "No attachment provided.";
+
     if (formData.attachment) {
         const file = formData.attachment;
+
+        // --- NSFW CHECK STARTS HERE ---
+        try {
+          // Check if the file is an image before trying to classify
+          if (file.type.startsWith('image/')) {
+            const model = await nsfwjs.load();
+            const image = document.createElement('img');
+            const objectUrl = URL.createObjectURL(file);
+            image.src = objectUrl;
+            await new Promise(resolve => image.onload = resolve);
+            
+            const predictions = await model.classify(image);
+            URL.revokeObjectURL(objectUrl);
+
+            const nsfwPrediction = predictions.find(
+              p => (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') && p.probability > 0.7
+            );
+
+            if (nsfwPrediction) {
+              toast({
+                title: "Inappropriate attachment detected.",
+                description: "Please do not attach NSFW content.",
+                variant: "destructive"
+              });
+              setIsLoading(false);
+              return; // Stop submission
+            }
+          }
+        } catch (error) {
+          console.error("Error during NSFW check:", error);
+          toast({ title: "Attachment check failed", description: "Could not verify the attached file. Please try again.", variant: "destructive" });
+          setIsLoading(false);
+          return; // Stop submission on error
+        }
+        // --- NSFW CHECK ENDS HERE ---
+
+        // If the check passes, proceed with upload
         const fileName = `${Date.now()}_${file.name}`;
         const { error } = await supabase.storage.from('contact-attachments').upload(fileName, file);
         if (error) {
@@ -81,13 +129,14 @@ const ContactUs = () => {
         const { data: { publicUrl } } = supabase.storage.from('contact-attachments').getPublicUrl(fileName);
         attachmentUrl = publicUrl;
     }
+
     const templateParams = { name: formData.name, email: formData.email, subject: formData.subject, message: formData.message, attachment_url: attachmentUrl, };
-    // IMPORTANT: Replace with your actual EmailJS credentials
-    const serviceId = "YOUR_SERVICE_ID";
-    const templateId = "YOUR_TEMPLATE_ID";
-    const publicKey = "YOUR_PUBLIC_KEY";
+    
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
     try {
-        await emailjs.send(serviceId, templateId, templateParams, publicKey);
+        await emailjs.send(serviceId!, templateId!, templateParams, publicKey!);
         toast({ title: "Message Sent!", description: "Thanks for reaching out. We'll get back to you soon.", });
         setFormData({ name: '', email: '', subject: '', message: '', attachment: null });
         const fileInput = document.getElementById('attachment') as HTMLInputElement;
@@ -103,9 +152,10 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
-        <title>Contact Us - DSY Studio</title>
-        <meta name="description" content="Get in touch with DSY Studio. Send us a message, report a bug, or just say hello. We'd love to hear from you." />
-      </Helmet>
+  <title>Contact Us | DSY Studio</title>
+  <meta name="description" content="Get in touch with DSY Studio. Send us a message, report a bug, or just say hello. We'd love to hear from you." />
+  <link rel="canonical" href="https://www.studiodsy.xyz/contact" />
+</Helmet>
       <BouncyLoader isLoading={showBouncyLoader} />
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
