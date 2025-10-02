@@ -2,101 +2,125 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Game } from "./GameDetail";
+import { Game } from "./GameDetail"; 
 import GamingHeader from "@/components/GamingHeader";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, CreditCard, Landmark, IndianRupee } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { Helmet } from 'react-helmet-async';
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+import { OnApproveData, OnApproveActions } from "@paypal/paypal-js";
+import { User } from "@supabase/supabase-js";
 
 const fadeIn: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" }
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+interface PayPalButtonWrapperProps {
+  game: Game | null;
+  user: User | null;
+  createOrder: () => Promise<string>;
+  onApprove: (data: OnApproveData, actions: OnApproveActions) => Promise<void>;
+}
+
+const PayPalButtonWrapper = ({ game, createOrder, onApprove }: PayPalButtonWrapperProps) => {
+  const [{ isPending }] = usePayPalScriptReducer();
+
+  return (
+    <>
+      {isPending && <div className="text-center p-4">Loading Payment Gateway...</div>}
+      <div style={{ opacity: isPending ? 0.5 : 1, pointerEvents: isPending ? 'none' : 'auto' }}>
+        <PayPalButtons
+          style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
+          createOrder={createOrder}
+          onApprove={onApprove}
+          onError={(err) => {
+            console.error("PayPal Button Error:", err);
+            toast.error("An error occurred with the PayPal payment.");
+          }}
+          disabled={isPending || !game}
+        />
+      </div>
+    </>
+  );
 };
 
 const Payment = () => {
-  const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { id: gameId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
+  const { user } = useAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("upi");
 
   useEffect(() => {
-    const fetchGame = async () => {
-      if (!id) {
-        toast.error("Game ID is missing.");
-        navigate("/games");
-        return;
-      }
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('games')
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (error) throw error;
-        setGame(data as Game);
-      } catch (error) {
-        console.error("Error fetching game for payment:", error);
-        toast.error("Could not load game details. Please try again.");
-        setGame(null);
-        navigate("/games");
-      } finally {
-        setLoading(false);
-      }
+    const fetchGame = async () => { 
+        if (!gameId) {
+          toast.error("Game ID is missing.");
+          navigate("/games");
+          return;
+        }
+        setLoading(true);
+        try {
+          const { data, error } = await supabase.from('games').select('*').eq('id', gameId).single();
+          if (error) throw error;
+          setGame(data as Game);
+        } catch (error) {
+          console.error("Error fetching game for payment:", error);
+          toast.error("Could not load game details. Please try again.");
+          navigate("/games");
+        } finally {
+          setLoading(false);
+        }
     };
-
     fetchGame();
-  }, [id, navigate]);
+  }, [gameId, navigate]);
 
-  const handlePayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !game) {
-      toast.error("You must be logged in to purchase a game.");
-      return;
-    }
-    setProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  const createOrder = async (): Promise<string> => { 
     try {
-      const { error } = await supabase.from('orders').insert({
-        user_id: user.id,
-        game_id: game.id,
-        status: 'completed',
-        amount: parseFloat(game.price.replace(/[^0-9.-]+/g,"")),
-        currency: 'INR',
-        payment_method: paymentMethod,
+        if (!game) throw new Error("Game details not loaded.");
+        const { data, error } = await supabase.functions.invoke('create-paypal-order', {
+          body: { gameId: game.id },
+        });
+        if (error) throw new Error(error.message);
+        if (!data.id) throw new Error("PayPal order ID was not returned.");
+        return data.id;
+      } catch (error) {
+        console.error("Error creating PayPal order:", error);
+        toast.error("Could not initiate PayPal payment. Please try again.");
+        return "";
+      }
+  };
+
+  const onApprove = async (data: OnApproveData, actions: OnApproveActions): Promise<void> => { 
+    toast.info("Payment approved. Finalizing your purchase, please wait...");
+    try {
+      if (!game || !user) throw new Error("Game or user information is missing.");
+      const { data: captureData, error: captureError } = await supabase.functions.invoke('capture-paypal-order', {
+        body: {
+          orderId: data.orderID,
+          gameId: game.id,
+          userId: user.id,
+          paymentMethod: 'paypal'
+        },
       });
-      if (error) throw error;
+      if (captureError) throw new Error(captureError.message);
       toast.success("Thank You for purchasing our game!");
       navigate(`/games/${game.id}`);
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("There was an issue with your purchase. Please try again.");
-    } finally {
-      setProcessing(false);
+      console.error("Failed to capture payment:", error);
+      toast.error("There was a problem finalizing your purchase. Please contact support.");
     }
   };
 
   if (loading) {
-    return <BouncyLoader isLoading={loading} />;
+    return <BouncyLoader isLoading={true} />;
   }
 
-  if (!game) {
+  if (!game) { 
     return (
       <div className="min-h-screen bg-gradient-hero">
         <GamingHeader />
@@ -110,48 +134,67 @@ const Payment = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-       <Helmet>
+      <Helmet>
         <title>Checkout for {game.title} - DSY Studio</title>
         <meta name="description" content={`Complete your purchase for ${game.title}. Secure payment options available.`} />
       </Helmet>
       <GamingHeader />
-      <div className="container mx-auto px-4 pt-32 pb-16 flex justify-center">
-        <motion.div className="w-full max-w-2xl" variants={fadeIn} initial="hidden" animate="visible">
-          <div className="mb-8">
-            <Link to={`/games/${game.id}`}><Button variant="ghost" size="sm"><ArrowLeft className="mr-2 h-4 w-4" /> Cancel and Go Back</Button></Link>
+      <div className="container mx-auto px-4 pt-24 md:pt-32 pb-16">
+        <motion.div variants={fadeIn} initial="hidden" animate="visible">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text pb-2">Secure Checkout</h1>
+            <p className="text-lg text-muted-foreground">You're just a step away from owning {game.title}!</p>
           </div>
-          <Card className="gaming-card">
-            <CardHeader>
-              <CardTitle className="text-3xl gradient-text">Checkout</CardTitle>
-              <CardDescription>You are purchasing "{game.title}"</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handlePayment}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <img src={game.image!} alt={game.title} className="w-full h-64 object-cover rounded-lg" />
-                  <div className="flex flex-col justify-center space-y-4">
-                    <h2 className="text-2xl font-bold">{game.title}</h2>
-                    <p className="text-sm text-muted-foreground">{game.description}</p>
-                    <div className="text-4xl font-bold text-accent">{game.price}</div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold border-b border-primary/20 pb-3">Order Summary</h2>
+              <Card className="gaming-card-solid flex gap-6 p-6">
+                <img src={game.image!} alt={game.title} className="w-24 h-32 object-cover rounded-md" />
+                <div className="flex flex-col">
+                  <h3 className="text-xl font-bold">{game.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">PC Digital Download</p>
+                  <div className="mt-auto text-2xl font-bold text-accent">{game.price}</div>
+                </div>
+              </Card>
+              <div className="border-t border-primary/20 pt-4 space-y-2">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span>{game.price}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Taxes</span>
+                  <span>Calculated at next step</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold pt-2">
+                  <span>Total</span>
+                  <span>{game.price}</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold border-b border-primary/20 pb-3">Payment Method</h2>
+              <Card className="gaming-card-solid">
+                <CardContent className="p-6">
+                  <p className="text-sm text-muted-foreground mb-6">
+                    You will be redirected to PayPal's secure gateway to complete your payment. The final charge will be in USD.
+                  </p>
+                  <PayPalButtonWrapper 
+                    game={game}
+                    user={user}
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                  />
+                  <div className="flex items-center justify-center mt-4 text-xs text-muted-foreground">
+                    <Lock className="w-3 h-3 mr-2" />
+                    <span>Secure payments powered by PayPal</span>
                   </div>
-                </div>
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold">Select Payment Method</h3>
-                  <RadioGroup defaultValue="upi" value={paymentMethod} onValueChange={setPaymentMethod} className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><Label htmlFor="upi" className="flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors hover:bg-primary/10 data-[state=checked]:border-primary"><RadioGroupItem value="upi" id="upi" /><IndianRupee className="h-5 w-5" /> UPI</Label></div>
-                    <div><Label htmlFor="card" className="flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors hover:bg-primary/10 data-[state=checked]:border-primary"><RadioGroupItem value="card" id="card" /><CreditCard className="h-5 w-5" /> Card</Label></div>
-                    <div><Label htmlFor="netbanking" className="flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors hover:bg-primary/10 data-[state=checked]:border-primary"><RadioGroupItem value="netbanking" id="netbanking" /><Landmark className="h-5 w-5" /> Net Banking</Label></div>
-                  </RadioGroup>
-                  {paymentMethod === 'upi' && ( <div className="space-y-2"><Label htmlFor="upi_id">UPI ID</Label><Input id="upi_id" placeholder="yourname@bank" defaultValue="demopayment@upi" /></div> )}
-                  {paymentMethod === 'card' && ( <div className="space-y-4"><div className="space-y-2"><Label htmlFor="card_number">Card Number</Label><Input id="card_number" placeholder="0000 0000 0000 0000" defaultValue="1234 5678 9101 1121"/></div><div className="grid grid-cols-2 gap-4"><div className="space-y-2"><Label htmlFor="expiry">Expiry</Label><Input id="expiry" placeholder="MM/YY" defaultValue="12/28"/></div><div className="space-y-2"><Label htmlFor="cvc">CVC</Label><Input id="cvc" placeholder="123" defaultValue="321" /></div></div></div> )}
-                  {paymentMethod === 'netbanking' && ( <div className="space-y-2"><Label htmlFor="bank">Select Bank</Label><select id="bank" className="w-full p-2 border rounded-md bg-transparent"><option>Demo Bank of India</option><option>Example National Bank</option></select></div> )}
-                </div>
-                <Button variant="hero" size="lg" className="w-full mt-8" type="submit" disabled={processing}>
-                  {processing ? "Processing..." : `Pay Securely - ${game.price}`}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+              <Link to={`/games/${game.id}`} className="w-full">
+                <Button variant="ghost" size="sm" className="w-full"><ArrowLeft className="mr-2 h-4 w-4" />Cancel and Go Back</Button>
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </div>
     </div>
