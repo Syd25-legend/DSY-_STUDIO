@@ -251,7 +251,7 @@ const GameDetail = () => {
             </CardContent></Card>
             <Card className="gaming-card"><CardHeader><CardTitle>Game Information</CardTitle></CardHeader><CardContent className="space-y-4">
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Developer:</span><span>{game.developer}</span></div>
+                {/* <div className="flex justify-between"><span className="text-muted-foreground">Developer:</span><span>{game.developer}</span></div> */}
                 {/* --- 2. REPLACE THE OLD RENDERING WITH THE NEW COMPONENT --- */}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Release Date:</span>
