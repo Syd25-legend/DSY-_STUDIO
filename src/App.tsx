@@ -27,7 +27,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import RefundPolicy from "./pages/RefundPolicy";
 import Play from "./pages/Play";
-import GameLobby from "./pages/GameLobby"; // Renamed for clarity
+
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -85,7 +85,7 @@ const App = () => {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/payment/:id" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
           <Route path="/play" element={<ProtectedRoute><Play /></ProtectedRoute>} />
-          <Route path="/play/:gameId" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
+        
 
           <Route path="*" element={<NotFound />} />
         </Routes>
