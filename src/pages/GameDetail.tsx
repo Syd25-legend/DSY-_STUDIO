@@ -39,7 +39,7 @@ export interface Game {
   status: string;
   releaseDate: string;
   rating: number;
-  developer: string;
+  // developer: string;
   platforms: string[];
   tags: string[];
   media: string[];

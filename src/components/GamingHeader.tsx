@@ -1,3 +1,5 @@
+// src/components/GamingHeader.tsx
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, Menu, X, ChevronRight, BookOpen, MessageCircle, Info, Mail, Home, Gamepad2 } from "lucide-react";
+import { User, LogOut, Loader2, Menu, X, ChevronRight, BookOpen, MessageCircle, Info, Mail, Home, Gamepad2, Play } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "../integrations/supabase/client";
@@ -119,14 +121,12 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
               </Button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto space-y-2">
-              {/* --- MODIFICATION START --- */}
-              {/* This div wrapper will hide these links on medium screens and up */}
               <div className="md:hidden">
                 <NavLink to="/" icon={Home}>Home</NavLink>
                 <NavLink to="/games" icon={Gamepad2}>Games</NavLink>
+                <NavLink to="/play" icon={Play}>Play</NavLink>
                 <Separator className="my-3 bg-primary/10" />
               </div>
-              {/* --- MODIFICATION END --- */}
 
               <AccordionLink name="blogs" title="Blogs" icon={BookOpen}>
                 <div onClick={() => handleNavigate('/blogs')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer">All Blogs</div>
@@ -150,7 +150,6 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
   );
 };
 
-// --- Main Header Component ---
 const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
   const { user, signOut, loading } = useAuth();
   const location = useLocation();
@@ -160,6 +159,7 @@ const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Games", path: "/games" },
+    { label: "Play", path: "/play" },
   ];
 
   const isActivePath = (path: string) => location.pathname === path;

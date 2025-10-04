@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { type QueryData } from '@supabase/supabase-js';
 
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -21,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Mail, Lock, Copy, Check, UploadCloud, Gamepad2, CropIcon, Loader2 } from "lucide-react";
+import { User, Mail, Lock, Copy, Check, UploadCloud, Gamepad2, CropIcon, Loader2, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
@@ -81,6 +82,12 @@ interface PurchasedGame {
   } | null;
 }
 
+const achievementsQuery = supabase
+  .from('player_achievements')
+  .select(`*, games ( title )`);
+type Achievement = QueryData<typeof achievementsQuery>[number];
+
+
 const cardContainerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -113,6 +120,7 @@ const Profile = () => {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [purchasedGames, setPurchasedGames] = useState<PurchasedGame[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
 
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
@@ -120,7 +128,7 @@ const Profile = () => {
   
   const [imageToCrop, setImageToCrop] = useState<string | undefined>(undefined);
   const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<Crop>(); // --- CORRECT STATE FOR PIXEL VALUES
+  const [completedCrop, setCompletedCrop] = useState<Crop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const [isCheckingImage, setIsCheckingImage] = useState(false);
 
@@ -128,6 +136,7 @@ const Profile = () => {
     if (!user) return;
     try {
       setLoading(true);
+      
       const { data: profileData, error: profileError, status } = await supabase
         .from('profiles').select(`username, avatar_url`).eq('id', user.id).single();
       if (profileError && status !== 406) throw profileError;
@@ -136,12 +145,24 @@ const Profile = () => {
         setUsername(profileData.username || '');
         setAvatarPreview(user.user_metadata.avatar_url);
       }
+      
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders').select(`created_at, games ( id, title, image, genre )`).eq('user_id', user.id).order('created_at', { ascending: false });
       if (ordersError) throw ordersError;
       if (ordersData) {
         setPurchasedGames(ordersData as PurchasedGame[]);
       }
+      
+      const { data: achievementsData, error: achievementsError } = await supabase
+        .from('player_achievements')
+        .select(`*, games ( title )`)
+        .eq('user_id', user.id)
+        .order('unlocked_at', { ascending: false });
+      if (achievementsError) throw achievementsError;
+      if (achievementsData) {
+        setAchievements(achievementsData);
+      }
+
     } catch (error) {
       console.error("Error fetching profile data:", error);
       toast({ title: "Error", description: "Could not fetch your profile data.", variant: "destructive" });
@@ -179,17 +200,13 @@ const Profile = () => {
     setCrop(initialCrop);
   };
   
-  // --- CORRECTED LOGIC FOR APPLYING THE CROP ---
   const handleApplyCrop = async () => {
     if (!imgRef.current || !completedCrop || !completedCrop.width || !completedCrop.height) {
       toast({ title: "Error", description: "Could not apply crop. Please select a crop area.", variant: "destructive" });
       return;
     }
-
     setIsCheckingImage(true);
-    // Pass the pixel-based 'completedCrop' state to the helper function
     const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
-
     try {
       const model = await nsfwjs.load();
       const image = document.createElement('img');
@@ -201,19 +218,13 @@ const Profile = () => {
       const nsfwPrediction = predictions.find(p => (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') && p.probability > 0.7);
 
       if (nsfwPrediction) {
-        toast({
-          title: "Inappropriate image detected.",
-          description: `Please upload a different profile picture. (Reason: ${nsfwPrediction.className})`,
-          variant: "destructive"
-        });
+        toast({ title: "Inappropriate image detected.", description: `Please upload a different profile picture. (Reason: ${nsfwPrediction.className})`, variant: "destructive"});
         setImageToCrop(undefined);
         return;
       }
-      
       setAvatarFile(croppedBlob);
       setAvatarPreview(URL.createObjectURL(croppedBlob));
       setImageToCrop(undefined);
-
     } catch (error) {
       console.error("Error during NSFW check:", error);
       toast({ title: "Image check failed", description: "Could not verify the image. Please try another.", variant: "destructive" });
@@ -226,7 +237,6 @@ const Profile = () => {
     if (!user) return;
     setIsUpdatingProfile(true);
     let newAvatarUrl = profile?.avatar_url;
-
     try {
       if (avatarFile) {
         const filePath = `${user.id}/${Date.now()}.png`;
@@ -362,6 +372,42 @@ const Profile = () => {
               </CardContent>
             </Card>
           </motion.div>
+
+          <motion.div variants={cardItemVariants}>
+            <Card className="gaming-card">
+              <CardHeader><CardTitle>Personal Achievements</CardTitle><CardDescription>Milestones you've unlocked across all DSY Studio games.</CardDescription></CardHeader>
+              <CardContent>
+                {achievements.length > 0 ? (
+                  <div className="space-y-4">
+                    {achievements.map((ach) => (
+                      <div key={ach.id} className="flex items-center gap-4 p-3 border rounded-lg hover:bg-primary/10 transition-colors">
+                        <Avatar className="w-12 h-12">
+                            <AvatarImage src={ach.icon_url || ''} />
+                            <AvatarFallback><Award /></AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold">{ach.achievement_id}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{ach.description}</span>
+                            <span>•</span>
+                            <span>{ach.games?.title}</span>
+                            <span>•</span>
+                            <span>{new Date(ach.unlocked_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 px-4 border-2 border-dashed rounded-lg">
+                    <Award className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">No Achievements Yet</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">Play our games to start unlocking achievements!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
       </div>
       
@@ -372,7 +418,7 @@ const Profile = () => {
             <ReactCrop 
               crop={crop} 
               onChange={(_, percentCrop) => setCrop(percentCrop)} 
-              onComplete={(c) => setCompletedCrop(c)} // CORRECT: Captures final pixel values
+              onComplete={(c) => setCompletedCrop(c)}
               aspect={1} 
               circularCrop
             >

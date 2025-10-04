@@ -26,6 +26,8 @@ import Payment from "./pages/Payment";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import RefundPolicy from "./pages/RefundPolicy";
+import Play from "./pages/Play";
+import GameLobby from "./pages/GameLobby"; // Renamed for clarity
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -45,7 +47,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const App = () => {
   const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
 
-  // Render a loading state if the PayPal Client ID is not yet available.
   if (!paypalClientId) {
     return <div className="min-h-screen bg-gradient-hero flex items-center justify-center"><p>Loading Payment Options...</p></div>;
   }
@@ -80,8 +81,11 @@ const App = () => {
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
 
+          {/* PROTECTED ROUTES */}
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/payment/:id" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+          <Route path="/play" element={<ProtectedRoute><Play /></ProtectedRoute>} />
+          <Route path="/play/:gameId" element={<ProtectedRoute><GameLobby /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

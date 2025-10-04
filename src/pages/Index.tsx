@@ -1,5 +1,7 @@
+// src/pages/Index.tsx
+
 import { Link } from "react-router-dom";
-import { useEffect, useState, useRef } from "react"; // --- 1. IMPORT useRef ---
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,11 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { Helmet } from "react-helmet-async";
 import {
   Play,
-  Users,
   MessageCircle,
   BookOpen,
   ArrowRight,
-  GamepadIcon,
+  Gamepad2 as GamepadIcon, // Renamed to avoid conflict
   Zap,
   Headphones,
   Monitor,
@@ -28,7 +29,7 @@ import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Game } from "./GameDetail";
 import BouncyLoader from "@/components/BouncyLoader";
-import { motion, Variants, useInView } from "framer-motion"; // --- 2. IMPORT useInView ---
+import { motion, Variants, useInView } from "framer-motion";
 
 const fadeInScaleVariants: Variants = {
   hidden: { scale: 0.95, opacity: 0 },
@@ -57,7 +58,6 @@ const Index = () => {
   const [isGameLoading, setIsGameLoading] = useState(true);
   const [showBouncyLoader, setShowBouncyLoader] = useState(true);
 
-  // --- 3. SETUP REFS AND HOOKS FOR SCROLL DETECTION ---
   const gamingHubRef = useRef(null);
   const isGamingHubInView = useInView(gamingHubRef, { once: false });
   const [showHeader, setShowHeader] = useState(true);
@@ -69,9 +69,6 @@ const Index = () => {
   });
 
   useEffect(() => {
-    // --- 4. LOGIC TO SHOW/HIDE HEADER BASED ON SCROLL POSITION ---
-    // If the gaming hub section is in view, we hide the header. Otherwise, we show it.
-    // This creates the slide up/down effect.
     setShowHeader(!isGamingHubInView);
   }, [isGamingHubInView]);
 
@@ -125,28 +122,27 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
-  <title>DSY Studio | Indie Game Development</title>
-  <meta name="description" content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community." />
-  <link rel="canonical" href="https://www.studiodsy.xyz/" />
-  <script type="application/ld+json">{`
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "DSY Studio",
-      "url": "https://www.studiodsy.xyz/",
-      "logo": "https://www.studiodsy.xyz/dsylogo1.png",
-      "description": "DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds and immersive experiences.",
-      "sameAs": [
-        "https://www.instagram.com/dsystudio_/",
-        "https://www.artstation.com/studiodsy",
-        "https://sketchfab.com/studiodsy"
-      ]
-    }
-  `}</script>
-</Helmet>
+        <title>DSY Studio | Indie Game Development</title>
+        <meta name="description" content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community." />
+        <link rel="canonical" href="https://www.studiodsy.xyz/" />
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "DSY Studio",
+            "url": "https://www.studiodsy.xyz/",
+            "logo": "https://www.studiodsy.xyz/dsylogo1.png",
+            "description": "DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds and immersive experiences.",
+            "sameAs": [
+              "https://www.instagram.com/dsystudio_/",
+              "https://www.artstation.com/studiodsy",
+              "https://sketchfab.com/studiodsy"
+            ]
+          }
+        `}</script>
+      </Helmet>
       
       <BouncyLoader isLoading={showBouncyLoader} />
-      {/* --- 5. PASS THE `hidden` PROP TO THE HEADER --- */}
       <GamingHeader hidden={!showHeader} />
 
       <section className="hero-section relative py-32 overflow-hidden">
@@ -247,18 +243,18 @@ const Index = () => {
                           size="hero"
                           className="w-full sm:w-auto group"
                         >
-                          <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                          <GamepadIcon className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                           Explore Our Games
                         </Button>
                       </Link>
-                      <Link to="/insights">
+                      <Link to="/play">
                         <Button
                           variant="neon"
                           size="hero"
                           className="w-full sm:w-auto"
                         >
-                          <Users className="mr-2 h-5 w-5" />
-                          Join Community
+                          <Play className="mr-2 h-5 w-5" />
+                          Play Games
                         </Button>
                       </Link>
                     </div>
@@ -300,7 +296,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* --- 6. ATTACH THE REF TO THE SECTION --- */}
       <section className="py-24 relative" ref={gamingHubRef}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -378,117 +373,109 @@ const Index = () => {
       </section>
 
       <footer className="border-t border-primary/20 py-12 backdrop-blur-sm">
-  <div className="container mx-auto px-4">
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-      {/* Column 1: DSY Studio Info (Unchanged) */}
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <img
-            src="/dsylogo1.png"
-            alt="DSY Studio Logo"
-            className="w-8 h-6"
-          />
-          <span className="text-lg font-bold gradient-text">
-            DSY Studio
-          </span>
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <img
+                  src="/dsylogo1.png"
+                  alt="DSY Studio Logo"
+                  className="w-8 h-6"
+                />
+                <span className="text-lg font-bold gradient-text">
+                  DSY Studio
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Creating immersive gaming experiences.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Policy</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/terms-and-conditions"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/refund-policy"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Refund Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Community</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a href="https://www.artstation.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    ArtStation
+                  </a>
+                </li>
+                <li>
+                  <a href="https://sketchfab.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    Sketchfab
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.patreon.com/c/DSYStudio" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    Patreon
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <div className="flex space-x-4">
+                <a
+                  href="https://www.instagram.com/dsystudio_/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-[#C13584] transition-colors duration-300"
+                >
+                  <Instagram className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://www.youtube.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-[#FF0000] transition-colors duration-300"
+                >
+                  <Youtube className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://www.github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-[#33b249] transition-colors duration-300"
+                >
+                  <Github className="w-6 h-6" />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-primary/20 mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>
+              &copy; {new Date().getFullYear()} DSY Studio. All rights reserved.
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Creating immersive gaming experiences.
-        </p>
-      </div>
-
-      {/* Column 2: Policy (As requested) */}
-      <div>
-        <h4 className="font-semibold mb-4">Policy</h4>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          <li>
-            <Link
-              to="/privacy-policy"
-              className="hover:text-primary transition-colors"
-            >
-              Privacy Policy
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/terms-and-conditions"
-              className="hover:text-primary transition-colors"
-            >
-              Terms & Conditions
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/refund-policy"
-              className="hover:text-primary transition-colors"
-            >
-              Refund Policy
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      {/* Column 3: New Community Links */}
-      <div>
-        <h4 className="font-semibold mb-4">Community</h4>
-        <ul className="space-y-2 text-sm text-muted-foreground">
-          {/* NOTE: Replace the "#" with your actual profile URLs */}
-          <li>
-            <a href="https://www.artstation.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-              ArtStation
-            </a>
-          </li>
-          <li>
-            <a href="https://sketchfab.com/studiodsy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-              Sketchfab
-            </a>
-          </li>
-          <li>
-            <a href="https://www.patreon.com/c/DSYStudio" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-              Patreon
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      {/* Column 4: Connect (Unchanged) */}
-      <div>
-        <h4 className="font-semibold mb-4">Connect</h4>
-        <div className="flex space-x-4">
-          <a
-            href="https://www.instagram.com/dsystudio_/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-[#C13584] transition-colors duration-300"
-          >
-            <Instagram className="w-6 h-6" />
-          </a>
-          <a
-            href="https://www.youtube.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-[#FF0000] transition-colors duration-300"
-          >
-            <Youtube className="w-6 h-6" />
-          </a>
-          <a
-            href="https://www.github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-[#33b249] transition-colors duration-300"
-          >
-            <Github className="w-6 h-6" />
-          </a>
-        </div>
-      </div>
-    </div>
-    <div className="border-t border-primary/20 mt-8 pt-8 text-center text-sm text-muted-foreground">
-      <p>
-        &copy; {new Date().getFullYear()} DSY Studio. All rights reserved.
-      </p>
-    </div>
-  </div>
-</footer>
+      </footer>
     </div>
   );
 };
