@@ -451,7 +451,7 @@ const Index = () => {
                   <Instagram className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://www.youtube.com"
+                  href="https://www.youtube.com/@studiodsy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-[#FF0000] transition-colors duration-300"
@@ -459,7 +459,7 @@ const Index = () => {
                   <Youtube className="w-6 h-6" />
                 </a>
                 <a
-                  href="https://www.github.com"
+                  href="https://github.com/Syd25-legend"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-[#33b249] transition-colors duration-300"
