@@ -17,7 +17,7 @@ import {
   MessageCircle,
   BookOpen,
   ArrowRight,
-  Gamepad2 as GamepadIcon, // Renamed to avoid conflict
+  Gamepad2 as GamepadIcon,
   Zap,
   Headphones,
   Monitor,
@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { Game } from "./GameDetail";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants, useInView } from "framer-motion";
 
@@ -53,15 +52,20 @@ const staggerContainer: Variants = {
   },
 };
 
-const Index = () => {
-  const [featuredGame, setFeaturedGame] = useState<Game | null>(null);
-  const [isGameLoading, setIsGameLoading] = useState(true);
-  const [showBouncyLoader, setShowBouncyLoader] = useState(true);
+// Static data for the featured game, using the local image
+const featuredGameData = {
+  id: "antim-yatra",
+  image: "/antimyatraposter.webp",
+  title: "Antim Yatra",
+  status: "Coming Soon",
+  description: "A cursed railway station binds you to your ancestor's betrayal, where you must face vengeful ghosts and decide the fate of the living and the dead.",
+};
 
+const Index = () => {
+  const [showBouncyLoader, setShowBouncyLoader] = useState(true);
   const gamingHubRef = useRef(null);
   const isGamingHubInView = useInView(gamingHubRef, { once: false });
   const [showHeader, setShowHeader] = useState(true);
-
   const [stats, setStats] = useState({
     games: 1,
     discussions: "0",
@@ -77,24 +81,6 @@ const Index = () => {
     const bouncyTimer = setTimeout(() => {
       setShowBouncyLoader(false);
     }, 1200);
-
-    const fetchFeaturedGame = async () => {
-      setIsGameLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("games")
-          .select("*")
-          .eq("featured", true)
-          .limit(1)
-          .single();
-        if (error) throw error;
-        setFeaturedGame(data as Game);
-      } catch (error) {
-        console.error("Error fetching featured game:", error);
-      } finally {
-        setIsGameLoading(false);
-      }
-    };
 
     const fetchStats = async () => {
       try {
@@ -113,7 +99,6 @@ const Index = () => {
       }
     };
 
-    fetchFeaturedGame();
     fetchStats();
 
     return () => clearTimeout(bouncyTimer);
@@ -150,142 +135,118 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* --- LEFT COLUMN --- */}
             <div>
-              {isGameLoading ? (
-                <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center">
-                  <p className="text-muted-foreground">
-                    Loading Featured Game...
-                  </p>
-                </Card>
-              ) : featuredGame ? (
-                <motion.div variants={fadeInScaleVariants} initial="hidden" animate="visible">
-                  <Card className="gaming-card overflow-hidden group">
-                    <div className="relative">
-                      <img
-                        src={featuredGame.image!}
-                        alt={featuredGame.title}
-                        className="w-full h-64 object-cover transition-transform group-hover:scale-105"
-                      />
-                      <div className="absolute top-4 left-4">
-                        <Badge className="bg-accent text-accent-foreground">
-                          {featuredGame.status}
-                        </Badge>
-                      </div>
+              <motion.div variants={fadeInScaleVariants} initial="hidden" animate="visible">
+                <Card className="gaming-card overflow-hidden group">
+                  <div className="relative">
+                    <img
+                      src={featuredGameData.image}
+                      alt={featuredGameData.title}
+                      className="w-full h-64 object-cover transition-transform "
+                    />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-accent text-accent-foreground">
+                        {featuredGameData.status}
+                      </Badge>
                     </div>
-                    <CardHeader>
-                      <CardTitle className="text-2xl gradient-text">
-                        {featuredGame.title}
-                      </CardTitle>
-                      <CardDescription className="text-base h-20 overflow-hidden">
-                        {featuredGame.description}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Link to={`/games/${featuredGame.id}`}>
-                        <Button variant="gaming" className="w-full group/btn">
-                          View Details
-                          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ) : (
-                 <motion.div variants={fadeInScaleVariants} initial="hidden" animate="visible">
-                    <Card className="gaming-card overflow-hidden group h-[450px] flex items-center justify-center">
-                      <p className="text-muted-foreground">
-                        No featured game available right now.
-                      </p>
-                    </Card>
-                 </motion.div>
-              )}
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="text-2xl gradient-text">
+                      {featuredGameData.title}
+                    </CardTitle>
+                    <CardDescription className="text-base h-20 overflow-hidden">
+                      {featuredGameData.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Link to={`/games/${featuredGameData.id}`}>
+                      <Button variant="gaming" className="w-full group/btn">
+                        View Details
+                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
 
             {/* --- RIGHT COLUMN --- */}
             <div className="h-[450px] flex flex-col justify-center">
-              {isGameLoading ? (
+              <motion.div
+                className="space-y-8"
+                variants={fadeInScaleVariants}
+                initial="hidden"
+                animate="visible"
+              >
                 <div className="text-center">
-                  <p className="text-muted-foreground">
-                    Loading Studio Info...
-                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center space-x-2 mb-4">
+                      <img
+                        src="/dsylogo1.png"
+                        alt="DSY Studio Logo"
+                        className="w-12 h-10"
+                      />
+                      <span className="text-sm font-medium text-primary tracking-wider uppercase">
+                        Indie Game Development Studio
+                      </span>
+                    </div>
+                    <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                      <span className="text-accent">DSY Studio</span>
+                    </h1>
+                    <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+                      Crafting immersive gaming experiences that push the
+                      boundaries of storytelling, horror, and interactive
+                      entertainment.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                    <Link to="/games">
+                      <Button
+                        variant="hero"
+                        size="hero"
+                        className="w-full sm:w-auto group"
+                      >
+                        <GamepadIcon className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                        Explore Our Games
+                      </Button>
+                    </Link>
+                    <Link to="/play">
+                      <Button
+                        variant="neon"
+                        size="hero"
+                        className="w-full sm:w-auto"
+                      >
+                        <Play className="mr-2 h-5 w-5" />
+                        Play Games
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-              ) : (
-                <motion.div
-                  className="space-y-8"
-                  variants={fadeInScaleVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <div className="text-center">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center space-x-2 mb-4">
-                        <img
-                          src="/dsylogo1.png"
-                          alt="DSY Studio Logo"
-                          className="w-12 h-10"
-                        />
-                        <span className="text-sm font-medium text-primary tracking-wider uppercase">
-                          Indie Game Development Studio
-                        </span>
-                      </div>
-                      <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                        <span className="text-accent">DSY Studio</span>
-                      </h1>
-                      <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-                        Crafting immersive gaming experiences that push the
-                        boundaries of storytelling, horror, and interactive
-                        entertainment.
-                      </p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                      <Link to="/games">
-                        <Button
-                          variant="hero"
-                          size="hero"
-                          className="w-full sm:w-auto group"
-                        >
-                          <GamepadIcon className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
-                          Explore Our Games
-                        </Button>
-                      </Link>
-                      <Link to="/play">
-                        <Button
-                          variant="neon"
-                          size="hero"
-                          className="w-full sm:w-auto"
-                        >
-                          <Play className="mr-2 h-5 w-5" />
-                          Play Games
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-3 gap-4 pt-8">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold gradient-text">
-                        2
-                      </div>
-                      <div className="text-sm text-muted-foreground">Games</div>
+                <div className="grid grid-cols-3 gap-4 pt-8">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold gradient-text">
+                      2
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold gradient-text">
-                        {stats.discussions}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Discussions
-                      </div>
+                    <div className="text-sm text-muted-foreground">Games</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold gradient-text">
+                      {stats.discussions}
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold gradient-text">
-                        {stats.blogPosts}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Blog Posts
-                      </div>
+                    <div className="text-sm text-muted-foreground">
+                      Discussions
                     </div>
                   </div>
-                </motion.div>
-              )}
+                  <div className="text-center">
+                    <div className="text-2xl font-bold gradient-text">
+                      {stats.blogPosts}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Blog Posts
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
