@@ -175,13 +175,24 @@ const GameDetail = () => {
     switch (status) {
       case "Released": return "bg-accent text-accent-foreground";
       case "In Development": return "bg-primary text-primary-foreground";
-      case "Coming Soon": return "bg-secondary text-secondary-foreground";
+      case "Coming Soon": return "bg-accent text-accent-foreground";
       case "Early Access": return "bg-muted text-muted-foreground";
       default: return "bg-muted text-muted-foreground";
     }
   };
   
+  // --- MODIFIED ACTION BUTTON ---
   const ActionButton = () => {
+    // 1. Check restricted statuses
+    if (game.status === "Coming Soon" || game.status === "In Development") {
+      return (
+        <Button variant="default" size="lg" className="w-full cursor-not-allowed " disabled>
+          {game.status}
+        </Button>
+      );
+    }
+
+    // 2. Existing logic for purchased games
     if (hasPurchased) {
       return (
         <a href="https://syd-25.itch.io/antim-yatra" target="_blank" rel="noopener noreferrer">
@@ -191,6 +202,8 @@ const GameDetail = () => {
         </a>
       );
     }
+
+    // 3. Existing logic for buying
     return (
       <Link to={`/payment/${game.id}`} className="w-full">
         <Button variant="hero" size="lg" className="w-full">

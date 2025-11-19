@@ -113,7 +113,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
           >
             <div className="flex items-center justify-between pb-4 border-b border-primary/10">
               <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center space-x-2">
-                <img src="/dsylogo1.png" alt="DSY Studio Logo" className="w-11 h-8" />
+                <img src="/group3.png" alt="DSY Studio Logo" className="w-11 h-8" />
                 <span className="text-xl font-bold gradient-text">DSY Studio</span>
               </Link>
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>

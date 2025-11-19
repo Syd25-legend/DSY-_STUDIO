@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play as PlayIcon } from "lucide-react";
+import { Play as PlayIcon, Bot } from "lucide-react"; // --- 1. IMPORT BOT ICON ---
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { Game } from "./GameDetail";
@@ -49,6 +49,11 @@ const cardVariants: Variants = {
 const Play = () => {
   const [playableGames, setPlayableGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // --- 2. CONTROL SWITCH ---
+  // Set this to 'true' to FORCE the "No games" screen.
+  // Set this to 'false' to show games (if they exist).
+  const SHOW_NO_GAMES_SCREEN = true; 
 
   useEffect(() => {
     const fetchPlayableGames = async () => {
@@ -98,6 +103,10 @@ const Play = () => {
     return <BouncyLoader isLoading={loading} />;
   }
 
+  // --- 3. LOGIC TO DETERMINE VIEW ---
+  // If the manual switch is ON, OR if there are actually no games -> Show Robot
+  const showEmptyState = SHOW_NO_GAMES_SCREEN || playableGames.length === 0;
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Helmet>
@@ -117,7 +126,7 @@ const Play = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Launch directly into our web-based games. No downloads required.</p>
         </motion.div>
         
-        {playableGames.length > 0 ? (
+        {!showEmptyState ? (
           <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             initial="hidden"
@@ -131,10 +140,25 @@ const Play = () => {
             ))}
           </motion.div>
         ) : (
-          <div className="text-center py-8 px-4 border-2 border-dashed rounded-lg">
-            <h3 className="mt-4 text-lg font-semibold">No Web Games... Yet!</h3>
-            <p className="mt-1 text-sm text-muted-foreground">There are no playable web games available at the moment. Check back soon!</p>
-          </div>
+          // --- 4. FUNKY ROBOT "NO GAMES" UI ---
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-primary/20 rounded-3xl bg-background/30 backdrop-blur-sm"
+          >
+            <div className="relative mb-6">
+              {/* Glowing background effect */}
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse" />
+              {/* The Funky Robot Icon */}
+              <Bot className="w-24 h-24 text-primary relative z-10 drop-shadow-[0_0_10px_rgba(var(--primary),0.5)]" strokeWidth={1.5} />
+            </div>
+            
+            <h3 className="text-3xl font-bold mb-2 gradient-text">No games till now</h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Our gamer robots are currently compiling the fun. Check back later for new web adventures!
+            </p>
+          </motion.div>
         )}
       </div>
     </div>

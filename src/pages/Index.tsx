@@ -116,7 +116,7 @@ const Index = () => {
             "@type": "Organization",
             "name": "DSY Studio",
             "url": "https://www.studiodsy.xyz/",
-            "logo": "https://www.studiodsy.xyz/dsylogo1.png",
+            "logo": "https://www.studiodsy.xyz/group3.png",
             "description": "DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds and immersive experiences.",
             "sameAs": [
               "https://www.instagram.com/dsystudio_/",
@@ -181,7 +181,7 @@ const Index = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-center space-x-2 mb-4">
                       <img
-                        src="/dsylogo1.png"
+                        src="/group3.png"
                         alt="DSY Studio Logo"
                         className="w-12 h-10"
                       />
@@ -339,7 +339,7 @@ const Index = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <img
-                  src="/dsylogo1.png"
+                  src="/group3.png"
                   alt="DSY Studio Logo"
                   className="w-8 h-6"
                 />
