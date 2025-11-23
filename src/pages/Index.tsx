@@ -1,7 +1,7 @@
 // src/pages/Index.tsx
 
 import { Link } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,7 +28,7 @@ import {
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
 import BouncyLoader from "@/components/BouncyLoader";
-import { motion, Variants, useInView } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 const fadeInScaleVariants: Variants = {
   hidden: { scale: 0.95, opacity: 0 },
@@ -63,8 +63,6 @@ const featuredGameData = {
 
 const Index = () => {
   const [showBouncyLoader, setShowBouncyLoader] = useState(true);
-  const gamingHubRef = useRef(null);
-  const isGamingHubInView = useInView(gamingHubRef, { once: false });
   const [showHeader, setShowHeader] = useState(true);
   const [stats, setStats] = useState({
     games: 1,
@@ -72,10 +70,25 @@ const Index = () => {
     blogPosts: 1,
   });
 
+  // Handle Header Visibility on Scroll
   useEffect(() => {
-    setShowHeader(!isGamingHubInView);
-  }, [isGamingHubInView]);
+    const handleScroll = () => {
+      // If the user is within 50px of the top (90% near original position), show header.
+      // Otherwise, hide it.
+      if (window.scrollY < 50) {
+        setShowHeader(true);
+      } else {
+        setShowHeader(false);
+      }
+    };
 
+    window.addEventListener("scroll", handleScroll);
+    
+    // Check initial position in case of refresh-on-scroll
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const bouncyTimer = setTimeout(() => {
@@ -257,7 +270,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-24 relative" ref={gamingHubRef}>
+      <section className="py-24 relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold gradient-text mb-4 pb-4">

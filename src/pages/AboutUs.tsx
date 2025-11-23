@@ -58,7 +58,7 @@ const AboutUs = () => {
       avatar: "/baibhab-paul.jpg",
       fallback: "BP",
       description: "Baibhab is a passionate gamer who knows everything there is to know about game design, bringing his unique vision to life. He has a gift for narrative and story design, as well as creating intricate core mechanics, all to make certain every second is entertaining. His understanding of player psychology helps produce unforgettable gaming experiences.",
-      instagram: "https://www.instagram.com/baibhab_paul/",
+      instagram: "https://www.instagram.com/paulbp05/",
     },
   ];
 
