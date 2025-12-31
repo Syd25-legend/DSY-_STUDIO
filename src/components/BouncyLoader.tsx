@@ -1,5 +1,5 @@
 // src/components/BouncyLoader.tsx
-import { HashLoader } from 'react-spinners';
+import LoaderAnimation from './loaderanimation';
 
 interface BouncyLoaderProps {
   isLoading: boolean;
@@ -10,13 +10,12 @@ const BouncyLoader = ({ isLoading }: BouncyLoaderProps) => {
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
-      <HashLoader
-        color="#ffffff" 
-        loading={isLoading}
-        cssOverride={{}}
-        size={40}
-        speedMultiplier={1}
-      />
+      {/* 
+        To change the size of the loader:
+        Pass a 'size' prop to LoaderAnimation, e.g., <LoaderAnimation size={80} /> or <LoaderAnimation size="100px" />
+        Default size is 50px (small).
+      */}
+      <LoaderAnimation size={80} />
     </div>
   );
 };
