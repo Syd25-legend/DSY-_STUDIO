@@ -11,16 +11,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Loader2, Menu, X, ChevronRight, BookOpen, MessageCircle, Info, Mail, Home, Gamepad2, Play } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Loader2,
+  Menu,
+  X,
+  ChevronRight,
+  BookOpen,
+  MessageCircle,
+  Info,
+  Mail,
+  Home,
+  Gamepad2,
+  Play,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "../integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
-type BlogTitle = { id: string; title: string; };
-type InsightTitle = { id: string; title: string; };
+type BlogTitle = { id: string; title: string };
+type InsightTitle = { id: string; title: string };
 
-const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: boolean) => void; }) => {
+const Sidebar = ({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}) => {
   const navigate = useNavigate();
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
   const [blogTitles, setBlogTitles] = useState<BlogTitle[]>([]);
@@ -28,12 +48,20 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
 
   useEffect(() => {
     const fetchSidebarData = async () => {
-      const { data: blogsData, error: blogsError } = await supabase.from('blogs').select('id, title').order('published_at', { ascending: false });
-      if (blogsError) console.error("Error fetching blogs for sidebar:", blogsError);
+      const { data: blogsData, error: blogsError } = await supabase
+        .from("blogs")
+        .select("id, title")
+        .order("published_at", { ascending: false });
+      if (blogsError)
+        console.error("Error fetching blogs for sidebar:", blogsError);
       else setBlogTitles(blogsData || []);
 
-      const { data: insightsData, error: insightsError } = await supabase.from('insights').select('id, title').order('created_at', { ascending: false });
-      if (insightsError) console.error("Error fetching insights for sidebar:", insightsError);
+      const { data: insightsData, error: insightsError } = await supabase
+        .from("insights")
+        .select("id, title")
+        .order("created_at", { ascending: false });
+      if (insightsError)
+        console.error("Error fetching insights for sidebar:", insightsError);
       else setInsightTitles(insightsData || []);
     };
     fetchSidebarData();
@@ -44,14 +72,35 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
     setIsOpen(false);
   };
 
-  const NavLink = ({ to, children, icon: Icon }: { to: string; children: React.ReactNode; icon: React.ElementType }) => (
-    <div onClick={() => handleNavigate(to)} className="flex items-center space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200 cursor-pointer">
+  const NavLink = ({
+    to,
+    children,
+    icon: Icon,
+  }: {
+    to: string;
+    children: React.ReactNode;
+    icon: React.ElementType;
+  }) => (
+    <div
+      onClick={() => handleNavigate(to)}
+      className="flex items-center space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200 cursor-pointer"
+    >
       <Icon className="w-5 h-5" />
       <span className="font-medium">{children}</span>
     </div>
   );
 
-  const AccordionLink = ({ name, title, children, icon: Icon }: { name: string; title: string; children: React.ReactNode; icon: React.ElementType }) => {
+  const AccordionLink = ({
+    name,
+    title,
+    children,
+    icon: Icon,
+  }: {
+    name: string;
+    title: string;
+    children: React.ReactNode;
+    icon: React.ElementType;
+  }) => {
     const isOpen = activeAccordion === name;
     const toggleAccordion = () => {
       setActiveAccordion(isOpen ? null : name);
@@ -59,12 +108,18 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
 
     return (
       <div>
-        <div onClick={toggleAccordion} className="flex items-center justify-between space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200 cursor-pointer">
+        <div
+          onClick={toggleAccordion}
+          className="flex items-center justify-between space-x-4 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-colors duration-200 cursor-pointer"
+        >
           <div className="flex items-center space-x-4">
             <Icon className="w-5 h-5" />
             <span className="font-medium">{title}</span>
           </div>
-          <motion.div animate={{ rotate: isOpen ? 90 : 0 }} transition={{ duration: 0.2 }}>
+          <motion.div
+            animate={{ rotate: isOpen ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <ChevronRight className="w-5 h-5" />
           </motion.div>
         </div>
@@ -76,8 +131,8 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
               animate="open"
               exit="collapsed"
               variants={{
-                open: { opacity: 1, height: 'auto' },
-                collapsed: { opacity: 0, height: 0 }
+                open: { opacity: 1, height: "auto" },
+                collapsed: { opacity: 0, height: 0 },
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="overflow-hidden pl-8"
@@ -112,36 +167,86 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (isOpen: b
             className="fixed top-0 left-0 h-full w-full max-w-xs bg-card border-r border-primary/20 z-50 flex flex-col p-4"
           >
             <div className="flex items-center justify-between pb-4 border-b border-primary/10">
-              <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center space-x-2">
-                <img src="/group3.png" alt="DSY Studio Logo" className="w-11 h-8" />
-                <span className="text-xl font-bold gradient-text">DSY Studio</span>
+              <Link
+                to="/"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-2"
+              >
+                <img
+                  src="/group3.png"
+                  alt="DSY Studio Logo"
+                  className="w-11 h-8"
+                />
+                <span className="text-xl font-bold gradient-text">
+                  DSY Studio
+                </span>
               </Link>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+              >
                 <X className="w-6 h-6" />
               </Button>
             </div>
             <div className="flex-grow pt-4 overflow-y-auto space-y-2">
               <div className="md:hidden">
-                <NavLink to="/" icon={Home}>Home</NavLink>
-                <NavLink to="/games" icon={Gamepad2}>Games</NavLink>
-                <NavLink to="/play" icon={Play}>Play</NavLink>
+                <NavLink to="/" icon={Home}>
+                  Home
+                </NavLink>
+                <NavLink to="/games" icon={Gamepad2}>
+                  Games
+                </NavLink>
+                <NavLink to="/play" icon={Play}>
+                  Play
+                </NavLink>
                 <Separator className="my-3 bg-primary/10" />
               </div>
 
               <AccordionLink name="blogs" title="Blogs" icon={BookOpen}>
-                <div onClick={() => handleNavigate('/blogs')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer">All Blogs</div>
-                {blogTitles.map(blog => (
-                  <div key={blog.id} onClick={() => handleNavigate(`/blogs/${blog.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer">{blog.title}</div>
+                <div
+                  onClick={() => handleNavigate("/blogs")}
+                  className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer"
+                >
+                  All Blogs
+                </div>
+                {blogTitles.map((blog) => (
+                  <div
+                    key={blog.id}
+                    onClick={() => handleNavigate(`/blogs/${blog.id}`)}
+                    className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer"
+                  >
+                    {blog.title}
+                  </div>
                 ))}
               </AccordionLink>
-              <AccordionLink name="insights" title="Insights" icon={MessageCircle}>
-                <div onClick={() => handleNavigate('/insights')} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer">All Insights</div>
-                {insightTitles.map(insight => (
-                  <div key={insight.id} onClick={() => handleNavigate(`/insights/${insight.id}`)} className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer">{insight.title}</div>
+              <AccordionLink
+                name="insights"
+                title="Insights"
+                icon={MessageCircle}
+              >
+                <div
+                  onClick={() => handleNavigate("/insights")}
+                  className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 cursor-pointer"
+                >
+                  All Insights
+                </div>
+                {insightTitles.map((insight) => (
+                  <div
+                    key={insight.id}
+                    onClick={() => handleNavigate(`/insights/${insight.id}`)}
+                    className="block pl-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-primary/10 truncate cursor-pointer"
+                  >
+                    {insight.title}
+                  </div>
                 ))}
               </AccordionLink>
-              <NavLink to="/about" icon={Info}>About Us</NavLink>
-              <NavLink to="/contact" icon={Mail}>Contact Us</NavLink>
+              <NavLink to="/about" icon={Info}>
+                About Us
+              </NavLink>
+              <NavLink to="/contact" icon={Mail}>
+                Contact Us
+              </NavLink>
             </div>
           </motion.nav>
         </>
@@ -163,13 +268,13 @@ const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
-  const handleLogin = () => navigate('/auth');
-  const handleSignup = () => navigate('/auth', { state: { showSignUp: true } });
+  const handleLogin = () => navigate("/auth");
+  const handleSignup = () => navigate("/auth", { state: { showSignUp: true } });
   const handleLogout = async () => {
     await signOut();
-    navigate('/');
+    navigate("/");
   };
-  const handleProfileNavigation = () => navigate('/profile');
+  const handleProfileNavigation = () => navigate("/profile");
 
   return (
     <>
@@ -186,19 +291,31 @@ const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
         <div className="container mx-auto px-4">
           <div className="bg-card/80 backdrop-blur-md border border-primary/20 rounded-2xl px-6 py-2 grid grid-cols-2 md:grid-cols-3 items-center">
             <div className="flex items-center justify-start">
-              <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(true)}
+              >
                 <Menu className="w-6 h-6 text-foreground" />
               </Button>
             </div>
-            
+
             <nav className="hidden md:flex items-center justify-center space-x-6">
               {navItems.map((item) => (
-                <Link key={item.path} to={item.path} className={`text-sm font-medium transition-colors ${isActivePath(item.path) ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'}`}>
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`text-sm font-medium transition-colors ${
+                    isActivePath(item.path)
+                      ? "text-primary neon-text"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
                   {item.label}
                 </Link>
               ))}
             </nav>
-            
+
             <div className="flex items-center justify-end">
               {loading ? (
                 <div className="flex items-center justify-center w-10 h-10">
@@ -208,22 +325,45 @@ const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Avatar className="cursor-pointer border-2 border-primary/20 hover:border-primary/40 transition-colors">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.username} />
+                      <AvatarImage
+                        src={user.user_metadata?.avatar_url}
+                        alt={user.user_metadata?.username}
+                      />
                       <AvatarFallback className="bg-gradient-primary text-primary-foreground">
-                        {user.user_metadata?.username ? user.user_metadata.username.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                        {user.user_metadata?.username ? (
+                          user.user_metadata.username.charAt(0).toUpperCase()
+                        ) : (
+                          <User className="w-4 h-4" />
+                        )}
                       </AvatarFallback>
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 bg-card/95 backdrop-blur-md border border-primary/20">
-                    <DropdownMenuItem onClick={handleProfileNavigation} className="cursor-pointer"><User className="mr-2 h-4 w-4" />Profile</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleProfileNavigation}
+                      className="cursor-pointer"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer"><LogOut className="mr-2 h-4 w-4" />Logout</DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Button variant="ghost" size="sm" onClick={handleLogin}>Login</Button>
-                  <Button variant="gaming" size="sm" onClick={handleSignup}>Sign Up</Button>
+                  <Button variant="ghost" size="sm" onClick={handleLogin}>
+                    Login
+                  </Button>
+                  <Button variant="gaming" size="sm" onClick={handleSignup}>
+                    Sign Up
+                  </Button>
                 </div>
               )}
             </div>

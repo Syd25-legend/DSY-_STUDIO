@@ -1,13 +1,21 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, ShoppingBag, Download, Eye } from "lucide-react"; 
+import { Star, ShoppingBag, Download, Eye } from "lucide-react";
 import GamingHeader from "@/components/GamingHeader";
 import { supabase } from "@/integrations/supabase/client";
+import Card3D from "@/components/Card3D";
+import ScrollProgress from "@/components/ScrollProgress";
 import { Game } from "./GameDetail";
-import { Helmet } from 'react-helmet-async';
+import { Helmet } from "react-helmet-async";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,7 +49,7 @@ const cardVariants: Variants = {
     opacity: 1,
     transition: {
       duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94], 
+      ease: [0.25, 0.46, 0.45, 0.94],
     },
   },
 };
@@ -50,29 +58,33 @@ const Games = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const [purchasedGameIds, setPurchasedGameIds] = useState<Set<string>>(new Set());
+  const [purchasedGameIds, setPurchasedGameIds] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const fetchGamesAndPurchases = async () => {
       try {
-        const { data: gamesData, error: gamesError } = await supabase.from('games').select('*').order('featured', { ascending: false });
+        const { data: gamesData, error: gamesError } = await supabase
+          .from("games")
+          .select("*")
+          .order("featured", { ascending: false });
         if (gamesError) throw gamesError;
         setGames((gamesData as Game[]) || []);
 
         if (user) {
           const { data: ordersData, error: ordersError } = await supabase
-            .from('orders')
-            .select('game_id')
-            .eq('user_id', user.id);
+            .from("orders")
+            .select("game_id")
+            .eq("user_id", user.id);
 
           if (ordersError) throw ordersError;
-          
-          const ids = new Set(ordersData.map(order => order.game_id));
+
+          const ids = new Set(ordersData.map((order) => order.game_id));
           setPurchasedGameIds(ids);
         }
-
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setGames([]);
       } finally {
         setLoading(false);
@@ -83,84 +95,144 @@ const Games = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Released": return "bg-accent text-accent-foreground";
-      case "In Development": return "bg-primary text-primary-foreground";
-      case "Coming Soon": return "bg-secondary text-secondary-foreground";
-      case "Early Access": return "bg-muted text-muted-foreground";
-      default: return "bg-muted text-muted-foreground";
+      case "Released":
+        return "bg-accent text-accent-foreground";
+      case "In Development":
+        return "bg-primary text-primary-foreground";
+      case "Coming Soon":
+        return "bg-secondary text-secondary-foreground";
+      case "Early Access":
+        return "bg-muted text-muted-foreground";
+      default:
+        return "bg-muted text-muted-foreground";
     }
   };
 
-  const GameCard = ({ game, hasPurchased }: { game: Game, hasPurchased: boolean }) => {
+  const GameCard = ({
+    game,
+    hasPurchased,
+  }: {
+    game: Game;
+    hasPurchased: boolean;
+  }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const tagsToShow = isExpanded ? game.tags : game.tags?.slice(0, 3);
 
     // Check if game is in a "pre-release" state
-    const isNotReleased = game.status === "Coming Soon" || game.status === "In Development";
+    const isNotReleased =
+      game.status === "Coming Soon" || game.status === "In Development";
 
     return (
-      <Card className="gaming-card group overflow-hidden flex flex-col h-full">
-        <Link to={`/games/${game.id}`} className="flex flex-col flex-grow">
-          <div className="relative overflow-hidden">
-            {game.image ? (
-              <img 
-                src={game.image} 
-                alt={game.title} 
-                className="w-full h-48 object-cover transition-transform group-hover:scale-105" 
-              />
-            ) : (
-              <div className="w-full h-48 flex items-center justify-center bg-muted/50 border-b border-border">
-                <h3 className="text-lg font-heading text-center p-4 text-muted-foreground">
-                  {game.title}
-                </h3>
+      <Card3D intensity={0.5}>
+        <Card className="gaming-card group overflow-hidden flex flex-col h-full">
+          <Link to={`/games/${game.id}`} className="flex flex-col flex-grow">
+            <div className="relative overflow-hidden">
+              {game.image ? (
+                <img
+                  src={game.image}
+                  alt={game.title}
+                  className="w-full h-48 object-cover transition-transform group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-48 flex items-center justify-center bg-muted/50 border-b border-border">
+                  <h3 className="text-lg font-heading text-center p-4 text-muted-foreground">
+                    {game.title}
+                  </h3>
+                </div>
+              )}
+              <div className="absolute top-3 left-3">
+                <Badge className={getStatusColor(game.status)}>
+                  {game.status}
+                </Badge>
               </div>
-            )}
-            <div className="absolute top-3 left-3"><Badge className={getStatusColor(game.status)}>{game.status}</Badge></div>
-            {game.rating > 0 && <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1"><Star className="w-3 h-3 text-yellow-400 fill-current" /><span className="text-xs font-medium">{game.rating}</span></div>}
-          </div>
-          <CardHeader>
-            <div className="flex justify-between items-start mb-2"><CardTitle className="text-lg group-hover:text-primary transition-colors">{game.title}</CardTitle><Badge variant="outline" className="text-xs flex-shrink-0">{game.genre}</Badge></div>
-            <CardDescription className="text-sm line-clamp-2 h-10">{game.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 flex flex-col flex-grow">
-            <div className="flex flex-wrap gap-1 items-center transition-all duration-300">
-              {tagsToShow?.map((tag) => <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>)}
-              {game.tags && game.tags.length > 3 && !isExpanded && <Badge variant="secondary" className="text-xs cursor-pointer hover:bg-primary/20" onClick={(e) => { e.preventDefault(); setIsExpanded(true); }}>+{game.tags.length - 3}</Badge>}
+              {game.rating > 0 && (
+                <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
+                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                  <span className="text-xs font-medium">{game.rating}</span>
+                </div>
+              )}
             </div>
-          </CardContent>
-        </Link>
-
-        <div className="p-6 pt-0 mt-auto">
-          {isNotReleased ? (
-            // --- 1. COMING SOON / IN DEVELOPMENT LOGIC ---
-            // Redirects to Game Details page, NOT payment page
-            <Link to={`/games/${game.id}`} className="mt-auto">
-              <Button variant="outline" className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground">
-                {/* If price exists, show "Price - [amount]". If not, show "View Details". */}
-                {game.price ? (
-                  <span className="font-bold">Price - {game.price}</span>
-                ) : (
-                  <><Eye className="mr-2 h-4 w-4" /> View Details</>
+            <CardHeader>
+              <div className="flex justify-between items-start mb-2">
+                <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                  {game.title}
+                </CardTitle>
+                <Badge variant="outline" className="text-xs flex-shrink-0">
+                  {game.genre}
+                </Badge>
+              </div>
+              <CardDescription className="text-sm line-clamp-2 h-10">
+                {game.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 flex flex-col flex-grow">
+              <div className="flex flex-wrap gap-1 items-center transition-all duration-300">
+                {tagsToShow?.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+                {game.tags && game.tags.length > 3 && !isExpanded && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs cursor-pointer hover:bg-primary/20"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsExpanded(true);
+                    }}
+                  >
+                    +{game.tags.length - 3}
+                  </Badge>
                 )}
-              </Button>
-            </Link>
-          ) : hasPurchased ? (
-            // --- 2. PURCHASED LOGIC ---
-            <a href="https://syd-25.itch.io/antim-yatra" target="_blank" rel="noopener noreferrer">
-              <Button variant="gaming" className="w-full">
-                <Download className="mr-2 h-4 w-4" /> Download
-              </Button>
-            </a>
-          ) : (
-            // --- 3. STANDARD BUY LOGIC ---
-            <Link to={`/payment/${game.id}`} className="mt-auto">
-              <Button variant="outline" className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground">
-                <ShoppingBag className="mr-2 h-4 w-4" /> Buy Now - {game.price}
-              </Button>
-            </Link>
-          )}
-        </div>
-      </Card>
+              </div>
+            </CardContent>
+          </Link>
+
+          <div className="p-6 pt-0 mt-auto">
+            {isNotReleased ? (
+              // --- 1. COMING SOON / IN DEVELOPMENT LOGIC ---
+              // Redirects to Game Details page, NOT payment page
+              <Link to={`/games/${game.id}`} className="mt-auto">
+                <Button
+                  variant="outline"
+                  className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  {/* If price exists, show "Price - [amount]". If not, show "View Details". */}
+                  {game.price ? (
+                    <span className="font-bold">Price - {game.price}</span>
+                  ) : (
+                    <>
+                      <Eye className="mr-2 h-4 w-4" /> View Details
+                    </>
+                  )}
+                </Button>
+              </Link>
+            ) : hasPurchased ? (
+              // --- 2. PURCHASED LOGIC ---
+              <a
+                href="https://syd-25.itch.io/antim-yatra"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="gaming" className="w-full">
+                  <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+              </a>
+            ) : (
+              // --- 3. STANDARD BUY LOGIC ---
+              <Link to={`/payment/${game.id}`} className="mt-auto">
+                <Button
+                  variant="outline"
+                  className="w-full text-accent border-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4" /> Buy Now -{" "}
+                  {game.price}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </Card>
+      </Card3D>
     );
   };
 
@@ -170,18 +242,32 @@ const Games = () => {
 
   if (!games.length) {
     return (
-      <div className="min-h-screen bg-gradient-hero"><GamingHeader /><div className="container mx-auto px-4 pt-32 pb-16"><div className="text-center">
-        <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Our Games</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">No games available at the moment. Check back soon for exciting new releases!</p>
-      </div></div></div>
+      <div className="min-h-screen bg-gradient-hero">
+        <GamingHeader />
+        <div className="container mx-auto px-4 pt-32 pb-16">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+              Our Games
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+              No games available at the moment. Check back soon for exciting new
+              releases!
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <ScrollProgress />
       <Helmet>
         <title>Our Games | DSY Studio</title>
-        <meta name="description" content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures." />
+        <meta
+          name="description"
+          content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures."
+        />
         <link rel="canonical" href="https://www.studiodsy.xyz/games" />
       </Helmet>
       <GamingHeader />
@@ -192,26 +278,30 @@ const Games = () => {
           animate="visible"
           variants={titleVariants}
         >
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">Our Games</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Discover our collection of immersive gaming experiences, from psychological horror to cyberpunk adventures.</p>
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+            Our Games
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Discover our collection of immersive gaming experiences, from
+            psychological horror to cyberpunk adventures.
+          </p>
         </motion.div>
-        
+
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           initial="hidden"
           animate="visible"
           variants={gridContainerVariants}
         >
           {games.map((game) => (
             <motion.div key={game.id} variants={cardVariants}>
-              <GameCard 
-                game={game} 
-                hasPurchased={purchasedGameIds.has(game.id)} 
+              <GameCard
+                game={game}
+                hasPurchased={purchasedGameIds.has(game.id)}
               />
             </motion.div>
           ))}
         </motion.div>
-
       </div>
     </div>
   );

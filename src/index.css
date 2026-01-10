@@ -1,17 +1,20 @@
+/* Import Robotic Gaming Fonts from Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800&family=Michroma&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* DSY Studio Gaming Design System - Dark Gaming Aesthetic */
+/* DSY Studio Gaming Design System - Premium 3D Gaming Aesthetic */
 
 @layer base {
   :root {
-    /* === ADD FONT VARIABLES HERE === */
-   --font-heading: "Mozilla Headline", sans-serif; /* For main H1s and hero titles */
-    --font-subheading: "Mozilla Text", sans-serif;  /* For H2, H3, card titles, etc. */
-    --font-sans: "Nunito", sans-serif; 
-    
-    /* Dark Gaming Theme */
+    /* === ROBOTIC GAMING FONTS === */
+    --font-heading: "Orbitron", monospace; /* Futuristic geometric font for H1s */
+    --font-subheading: "Rajdhani", sans-serif; /* Sleek tech-inspired font for H2-H6 */
+    --font-sans: "Exo 2", sans-serif; /* Dynamic gaming font for body text */
+
+    /* Dark Gaming Theme - PRESERVED */
     --background: 220 15% 6%;
     --foreground: 210 20% 90%;
 
@@ -21,7 +24,7 @@
     --popover: 220 15% 8%;
     --popover-foreground: 210 20% 90%;
 
-    /* Muted Gaming Colors */
+    /* Muted Gaming Colors - PRESERVED */
     --primary: 210 15% 70%;
     --primary-foreground: 220 15% 6%;
     --primary-glow: 210 20% 80%;
@@ -44,65 +47,87 @@
     --input: 220 15% 12%;
     --ring: 210 15% 70%;
 
-    /* Dark Gaming Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 15% 70%), hsl(220 10% 40%));
-    --gradient-hero: linear-gradient(135deg, hsl(220 15% 6%) 0%, hsl(220 15% 10%) 50%, hsl(220 15% 6%) 100%);
+    /* Dark Gaming Gradients - PRESERVED */
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(210 15% 70%),
+      hsl(220 10% 40%)
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(220 15% 6%) 0%,
+      hsl(220 15% 10%) 50%,
+      hsl(220 15% 6%) 100%
+    );
     --gradient-card: linear-gradient(145deg, hsl(220 15% 10%), hsl(220 15% 6%));
-    --gradient-gaming: linear-gradient(90deg, hsl(210 15% 70%) 0%, hsl(217, 5%, 68%) 10%, hsl(25, 92%, 53%) 70%);
+    --gradient-gaming: linear-gradient(
+      90deg,
+      hsl(210 15% 70%) 0%,
+      hsl(217, 5%, 68%) 10%,
+      hsl(25, 92%, 53%) 70%
+    );
 
-    /* Subtle Gaming Shadows */
+    /* Enhanced Gradients for 3D Effects */
+    --gradient-neon: linear-gradient(45deg, hsl(210 15% 70%), hsl(25 85% 60%));
+    --gradient-glow: radial-gradient(
+      circle,
+      hsl(210 15% 70% / 0.4) 0%,
+      transparent 70%
+    );
+    --gradient-glass: linear-gradient(
+      135deg,
+      hsl(220 15% 12% / 0.8),
+      hsl(220 15% 8% / 0.6)
+    );
+
+    /* Subtle Gaming Shadows - PRESERVED + ENHANCED */
     --shadow-neon: 0 0 15px hsl(210 15% 70% / 0.3);
     --shadow-card: 0 4px 20px hsl(220 15% 3% / 0.8);
     --shadow-intense: 0 0 25px hsl(210 15% 70% / 0.2);
 
-    /* Gaming Animations */
+    /* 3D Shadow Effects */
+    --shadow-3d: 0 10px 30px hsl(220 15% 3% / 0.9),
+      0 1px 8px hsl(210 15% 70% / 0.1);
+    --shadow-3d-hover: 0 20px 40px hsl(220 15% 3% / 1),
+      0 5px 15px hsl(210 15% 70% / 0.2);
+    --shadow-depth: inset 0 -2px 4px hsl(220 15% 3% / 0.3),
+      inset 0 2px 4px hsl(210 15% 70% / 0.05);
+
+    /* Gaming Animations - PRESERVED + ENHANCED */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-3d: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     --radius: 0.75rem;
 
+    /* Sidebar Variables - PRESERVED */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -123,57 +148,167 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    /* === APPLY DEFAULT FONT === */
-    @apply font-sans;
+    @apply bg-background text-foreground font-sans;
+    font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
-  /* === APPLY HEADING AND SUBHEADING FONTS === */
-  h1, .gradient-text {
+
+  /* Apply Robotic Gaming Fonts */
+  h1,
+  .gradient-text {
     @apply font-heading;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
-  
-  h2, h3, h4, h5, h6 {
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-subheading;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  p,
+  span,
+  div {
+    @apply font-sans;
   }
 }
 
-/* Gaming-specific components and animations */
+/* Premium Gaming Components with 3D Effects */
 @layer components {
+  /* Enhanced Gaming Card */
   .gaming-card {
     @apply bg-gradient-to-br from-card to-muted/50 border border-primary/20 backdrop-blur-sm;
     box-shadow: var(--shadow-card);
+    transform-style: preserve-3d;
+    transition: var(--transition-smooth);
   }
 
   .gaming-card:hover {
     @apply border-primary/40;
-    box-shadow: var(--shadow-neon);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-3d-hover);
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  /* 3D Card with Mouse Tracking */
+  .card-3d {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: var(--transition-3d);
+    box-shadow: var(--shadow-3d);
+  }
+
+  .card-3d:hover {
+    box-shadow: var(--shadow-3d-hover);
+  }
+
+  .card-3d-content {
+    transform: translateZ(50px);
     transition: var(--transition-smooth);
   }
 
-  .neon-text {
-    text-shadow: 0 0 10px hsl(var(--primary));
+  /* Glassmorphism Enhanced */
+  .glass-card {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow: var(--shadow-depth);
   }
 
+  /* Neon Text Effects */
+  .neon-text {
+    text-shadow: 0 0 10px hsl(var(--primary)),
+      0 0 20px hsl(var(--primary) / 0.8), 0 0 30px hsl(var(--primary) / 0.6);
+  }
+
+  .neon-text-accent {
+    text-shadow: 0 0 10px hsl(var(--accent)), 0 0 20px hsl(var(--accent) / 0.8),
+      0 0 30px hsl(var(--accent) / 0.6);
+  }
+
+  /* Gradient Text */
   .gradient-text {
     background: var(--gradient-gaming);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% auto;
+    animation: gradientShift 8s ease-in-out infinite;
   }
 
+  /* Sophisticated Shine Text - For Select Titles Only */
+  .shine-text {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted-foreground)) 0%,
+      hsl(var(--primary)) 25%,
+      hsl(var(--primary)) 50%,
+      hsl(var(--primary)) 75%,
+      hsl(var(--muted-foreground)) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shineSlide 3s ease-in-out infinite;
+  }
+
+  /* Michroma Font for DSY Studio Branding */
+  .font-michroma {
+    font-family: 'Michroma', sans-serif;
+  }
+
+  /* Glitch Effect for Headings */
+  .glitch-text {
+    position: relative;
+    animation: glitch 1s infinite;
+  }
+
+  .glitch-text::before,
+  .glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .glitch-text::before {
+    left: 2px;
+    text-shadow: -2px 0 hsl(var(--accent));
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+  }
+
+  .glitch-text::after {
+    left: -2px;
+    text-shadow: -2px 0 hsl(var(--primary));
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim 2s infinite linear alternate-reverse;
+  }
+
+  /* Floating Header */
   .floating-header {
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px) saturate(180%);
     background: hsl(var(--background) / 0.8);
     border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 4px 20px hsl(220 15% 3% / 0.5);
   }
 
+  /* Pill Navigation */
   .pill-nav {
     @apply bg-gradient-to-r from-primary/10 to-secondary/10 backdrop-blur-md border border-primary/20;
     box-shadow: var(--shadow-card);
   }
 
+  /* Hero Section with Particle Background */
   .hero-section {
     background: var(--gradient-hero);
     position: relative;
@@ -181,16 +316,26 @@
   }
 
   .hero-section::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 30% 30%, hsl(var(--primary) / 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 70% 70%, hsl(var(--accent) / 0.06) 0%, transparent 50%);
+    background: radial-gradient(
+        circle at 30% 30%,
+        hsl(var(--primary) / 0.08) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 70% 70%,
+        hsl(var(--accent) / 0.06) 0%,
+        transparent 50%
+      );
+    animation: pulseGlow 8s ease-in-out infinite;
   }
 
+  /* Floating Icons */
   .floating-icon {
     position: absolute;
     opacity: 0.4;
@@ -207,16 +352,226 @@
     animation-delay: -4s;
   }
 
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-20px) rotate(180deg);
-    }
+  /* Parallax Layers */
+  .parallax-layer {
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+  }
+
+  /* Animated Button */
+  .btn-3d {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-3d:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-3d-hover);
+  }
+
+  .btn-3d:active {
+    transform: translateY(0px) scale(0.98);
+  }
+
+  /* Flip Card */
+  .flip-card {
+    perspective: 1000px;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Scroll Reveal Animation */
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+
+  .scroll-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Loading Animation (Preserve existing BouncyLoader) */
+  .loader-preserve {
+    /* This ensures existing loader styles are not affected */
   }
 }
 
+/* Advanced Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes shineSlide {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes glitch-anim {
+  0% {
+    clip: rect(42px, 9999px, 44px, 0);
+  }
+  5% {
+    clip: rect(12px, 9999px, 59px, 0);
+  }
+  10% {
+    clip: rect(48px, 9999px, 29px, 0);
+  }
+  15% {
+    clip: rect(42px, 9999px, 73px, 0);
+  }
+  20% {
+    clip: rect(63px, 9999px, 27px, 0);
+  }
+  25% {
+    clip: rect(34px, 9999px, 55px, 0);
+  }
+  30% {
+    clip: rect(86px, 9999px, 73px, 0);
+  }
+  35% {
+    clip: rect(20px, 9999px, 20px, 0);
+  }
+  40% {
+    clip: rect(26px, 9999px, 60px, 0);
+  }
+  45% {
+    clip: rect(25px, 9999px, 66px, 0);
+  }
+  50% {
+    clip: rect(57px, 9999px, 98px, 0);
+  }
+  55% {
+    clip: rect(5px, 9999px, 46px, 0);
+  }
+  60% {
+    clip: rect(82px, 9999px, 31px, 0);
+  }
+  65% {
+    clip: rect(54px, 9999px, 27px, 0);
+  }
+  70% {
+    clip: rect(28px, 9999px, 99px, 0);
+  }
+  75% {
+    clip: rect(45px, 9999px, 69px, 0);
+  }
+  80% {
+    clip: rect(23px, 9999px, 85px, 0);
+  }
+  85% {
+    clip: rect(54px, 9999px, 84px, 0);
+  }
+  90% {
+    clip: rect(45px, 9999px, 47px, 0);
+  }
+  95% {
+    clip: rect(37px, 9999px, 20px, 0);
+  }
+  100% {
+    clip: rect(4px, 9999px, 91px, 0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Utility Classes */
 @layer utilities {
   .glow-primary {
     box-shadow: var(--shadow-neon);
@@ -226,6 +581,14 @@
     box-shadow: var(--shadow-intense);
   }
 
+  .glow-3d {
+    box-shadow: var(--shadow-3d);
+  }
+
+  .glow-3d-hover:hover {
+    box-shadow: var(--shadow-3d-hover);
+  }
+
   .transition-gaming {
     transition: var(--transition-smooth);
   }
@@ -233,8 +596,72 @@
   .transition-bounce {
     transition: var(--transition-bounce);
   }
+
+  .transition-3d {
+    transition: var(--transition-3d);
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  /* Gradient Backgrounds */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-gaming {
+    background: var(--gradient-gaming);
+  }
+
+  .bg-gradient-glass {
+    background: var(--gradient-glass);
+  }
+
+  .bg-gradient-neon {
+    background: var(--gradient-neon);
+  }
 }
 
+/* Smooth Scrolling */
 html {
   scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
