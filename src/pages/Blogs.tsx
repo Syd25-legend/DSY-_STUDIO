@@ -17,7 +17,7 @@ import Card3D from "@/components/Card3D";
 import ScrollProgress from "@/components/ScrollProgress";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 
 interface Blog {
   id: string;
@@ -103,7 +103,7 @@ const Blogs = () => {
       blog.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       blog.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       blog.tags?.some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
+        tag.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     const matchesCategory =
       selectedCategory === "All" || blog.category === selectedCategory;
@@ -189,14 +189,11 @@ const Blogs = () => {
   if (!blogs.length) {
     return (
       <div className="min-h-screen bg-gradient-hero">
-        <Helmet>
-          <title>Developer Blogs | DSY Studio</title>
-          <meta
-            name="description"
-            content="Behind-the-scenes insights, development updates, and thoughts on game design from the DSY Studio team."
-          />
-          <link rel="canonical" href="https://www.studiodsy.xyz/blogs" />
-        </Helmet>
+        <SEO
+          title="Developer Blogs"
+          description="Behind-the-scenes insights, development updates, and thoughts on game design from the DSY Studio team."
+          canonical="/blogs"
+        />
         <GamingHeader />
         <div className="container mx-auto px-4 pt-32 pb-16">
           <div className="text-center">
@@ -216,14 +213,11 @@ const Blogs = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <ScrollProgress />
-      <Helmet>
-        <title>Developer Blogs | DSY Studio</title>
-        <meta
-          name="description"
-          content="Behind-the-scenes insights, development updates, and thoughts on game design from the DSY Studio team."
-        />
-        <link rel="canonical" href="https://www.studiodsy.xyz/blogs" />
-      </Helmet>
+      <SEO
+        title="Developer Blogs"
+        description="Behind-the-scenes insights, development updates, and thoughts on game design from the DSY Studio team."
+        canonical="/blogs"
+      />
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
         <motion.div

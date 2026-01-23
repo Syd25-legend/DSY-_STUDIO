@@ -2,32 +2,56 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.studiodsy.xyz/</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>1.00</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.studiodsy.xyz/games</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>0.90</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.studiodsy.xyz/blogs</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>0.80</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.studiodsy.xyz/insights</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>0.80</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.studiodsy.xyz/about</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>0.70</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.studiodsy.xyz/contact</loc>
-    <lastmod>2025-10-01</lastmod>
-    <priority>0.60</priority>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.studiodsy.xyz/privacy-policy</loc>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.studiodsy.xyz/terms-and-conditions</loc>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.studiodsy.xyz/refund-policy</loc>
+    <lastmod>2026-01-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>

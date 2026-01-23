@@ -2,7 +2,7 @@ import GamingHeader from "@/components/GamingHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Instagram } from "lucide-react";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import { useState, useEffect } from "react";
 import Card3D from "@/components/Card3D";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -69,14 +69,11 @@ const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <ScrollProgress />
-      <Helmet>
-        <title>About Us | DSY Studio</title>
-        <meta
-          name="description"
-          content="Meet the team behind DSY Studio. Learn about our passion for creating immersive horror games and rich interactive storytelling."
-        />
-        <link rel="canonical" href="https://www.studiodsy.xyz/about" />
-      </Helmet>
+      <SEO
+        title="About Us"
+        description="Meet the team behind DSY Studio. Learn about our passion for creating immersive horror games and rich interactive storytelling."
+        canonical="/about"
+      />
       <BouncyLoader isLoading={showBouncyLoader} />
       <GamingHeader />
 

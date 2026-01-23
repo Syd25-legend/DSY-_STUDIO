@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Card3D from "@/components/Card3D";
 import ScrollProgress from "@/components/ScrollProgress";
 import { Game } from "./GameDetail";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import BouncyLoader from "@/components/BouncyLoader";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,7 +59,7 @@ const Games = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const [purchasedGameIds, setPurchasedGameIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -262,14 +262,11 @@ const Games = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <ScrollProgress />
-      <Helmet>
-        <title>Our Games | DSY Studio</title>
-        <meta
-          name="description"
-          content="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures."
-        />
-        <link rel="canonical" href="https://www.studiodsy.xyz/games" />
-      </Helmet>
+      <SEO
+        title="Our Games"
+        description="Explore the full collection of games from DSY Studio. Discover our immersive gaming experiences, from psychological horror to cyberpunk adventures."
+        canonical="/games"
+      />
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">
         <motion.div

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Mail, Bug, Paperclip, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import Card3D from "@/components/Card3D";
 import ScrollProgress from "@/components/ScrollProgress";
 import emailjs from "@emailjs/browser";
@@ -68,7 +68,7 @@ const ContactUs = () => {
   }, [user, formData.email]);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
@@ -129,7 +129,7 @@ const ContactUs = () => {
               (p.className === "Porn" ||
                 p.className === "Hentai" ||
                 p.className === "Sexy") &&
-              p.probability > 0.7
+              p.probability > 0.7,
           );
 
           if (nsfwPrediction) {
@@ -199,7 +199,7 @@ const ContactUs = () => {
         attachment: null,
       });
       const fileInput = document.getElementById(
-        "attachment"
+        "attachment",
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     } catch (error) {
@@ -217,14 +217,11 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen bg-gradient-hero">
       <ScrollProgress />
-      <Helmet>
-        <title>Contact Us | DSY Studio</title>
-        <meta
-          name="description"
-          content="Get in touch with DSY Studio. Send us a message, report a bug, or just say hello. We'd love to hear from you."
-        />
-        <link rel="canonical" href="https://www.studiodsy.xyz/contact" />
-      </Helmet>
+      <SEO
+        title="Contact Us"
+        description="Get in touch with DSY Studio. Send us a message, report a bug, or just say hello. We'd love to hear from you."
+        canonical="/contact"
+      />
       <BouncyLoader isLoading={showBouncyLoader} />
       <GamingHeader />
       <div className="container mx-auto px-4 pt-32 pb-16">

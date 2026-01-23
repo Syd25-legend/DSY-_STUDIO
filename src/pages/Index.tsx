@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/SEO";
 import {
   Play,
   MessageCircle,
@@ -128,29 +128,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero relative">
-      <Helmet>
-        <title>DSY Studio | Indie Game Development</title>
-        <meta
-          name="description"
-          content="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community."
-        />
-        <link rel="canonical" href="https://www.studiodsy.xyz/" />
-        <script type="application/ld+json">{`
-          {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            "name": "DSY Studio",
-            "url": "https://www.studiodsy.xyz/",
-            "logo": "https://www.studiodsy.xyz/group3.png",
-            "description": "DSY Studio is a passionate team of two game creators focused on building compelling narrative worlds and immersive experiences.",
-            "sameAs": [
-              "https://www.instagram.com/dsystudio_/",
-              "https://www.artstation.com/studiodsy",
-              "https://sketchfab.com/studiodsy"
-            ]
-          }
-        `}</script>
-      </Helmet>
+      <SEO
+        title="Home"
+        description="Welcome to DSY Studio. We craft immersive gaming experiences that push the boundaries of storytelling, horror, and interactive entertainment. Explore our games and join our community."
+      />
 
       <BouncyLoader isLoading={showBouncyLoader} />
       <ScrollProgress />
