@@ -149,13 +149,13 @@ const Index = () => {
               initial="hidden"
               animate="visible"
             >
-              <Card3D intensity={0.15}>
-                <Card className="gaming-card overflow-hidden group border-2">
+              <Card3D intensity={0.015}>
+                <Card className="gaming-card overflow-hidden border-2">
                   <div className="relative">
                     <img
                       src={featuredGameData.image}
                       alt={featuredGameData.title}
-                      className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+                      className="w-full h-64 object-cover"
                     />
                     <div className="absolute top-4 left-4">
                       <Badge className="bg-accent text-accent-foreground neon-text-accent">
@@ -163,24 +163,16 @@ const Index = () => {
                       </Badge>
                     </div>
                   </div>
-                  <CardHeader>
-                    <CardTitle className="text-2xl gradient-text">
-                      {featuredGameData.title}
-                    </CardTitle>
-                    <CardDescription className="text-base h-20 overflow-hidden">
-                      {featuredGameData.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Link to={`/games/${featuredGameData.id}`}>
-                      <Button
-                        variant="gaming"
-                        className="w-full group/btn btn-3d"
-                      >
-                        View Details
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                      </Button>
-                    </Link>
+                  <CardContent className="p-4">
+                    {/* Steam Widget */}
+                    <iframe
+                      src="https://store.steampowered.com/widget/4367070/"
+                      frameBorder="0"
+                      width="100%"
+                      height="190"
+                      title="Antim Yatra on Steam"
+                      className="rounded-lg"
+                    />
                   </CardContent>
                 </Card>
               </Card3D>
@@ -236,35 +228,6 @@ const Index = () => {
                         Play Games
                       </Button>
                     </Link>
-                  </div>
-                </div>
-
-                {/* Stats with Animated Counters */}
-                <div className="grid grid-cols-3 gap-4 pt-8">
-                  <div className="text-center">
-                    <AnimatedCounter
-                      end={stats.games}
-                      className="text-3xl font-bold gradient-text"
-                    />
-                    <div className="text-sm text-muted-foreground">Games</div>
-                  </div>
-                  <div className="text-center">
-                    <AnimatedCounter
-                      end={stats.discussions}
-                      className="text-3xl font-bold gradient-text"
-                    />
-                    <div className="text-sm text-muted-foreground">
-                      Discussions
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <AnimatedCounter
-                      end={stats.blogPosts}
-                      className="text-3xl font-bold gradient-text"
-                    />
-                    <div className="text-sm text-muted-foreground">
-                      Blog Posts
-                    </div>
                   </div>
                 </div>
               </motion.div>

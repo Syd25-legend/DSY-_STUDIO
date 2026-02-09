@@ -124,7 +124,7 @@ const Games = () => {
 
     return (
       <Card3D intensity={0.5}>
-        <Card className="gaming-card group overflow-hidden flex flex-col h-full">
+        <Card className="gaming-card group overflow-hidden flex flex-col h-full md:h-auto md:aspect-[3/4]">
           <Link to={`/games/${game.id}`} className="flex flex-col flex-grow">
             <div className="relative overflow-hidden">
               {game.image ? (
