@@ -27,6 +27,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import RefundPolicy from "./pages/RefundPolicy";
 import Play from "./pages/Play";
+import Assets from "./pages/Assets";
+import AssetDetail from "./pages/AssetDetail";
 
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -70,6 +72,8 @@ const App = () => {
           <Route path="/auth" element={<Auth />} />
           <Route path="/games" element={<Games />} />
           <Route path="/games/:id" element={<GameDetail />} />
+          <Route path="/assets" element={<Assets />} />
+          <Route path="/assets/:id" element={<AssetDetail />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/insights" element={<Insights />} />

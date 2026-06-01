@@ -25,6 +25,7 @@ import {
   Home,
   Gamepad2,
   Play,
+  Package,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
@@ -197,6 +198,10 @@ const Sidebar = ({
                 <NavLink to="/games" icon={Gamepad2}>
                   Games
                 </NavLink>
+                <NavLink to="/assets" icon={Package}>
+                  Assets
+                </NavLink>
+                {/* Play — hidden from nav but route kept in code */}
                 <NavLink to="/play" icon={Play}>
                   Play
                 </NavLink>
@@ -264,7 +269,9 @@ const GamingHeader = ({ hidden = false }: { hidden?: boolean }) => {
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Games", path: "/games" },
-    { label: "Play", path: "/play" },
+    { label: "Assets", path: "/assets" },
+    // Play is intentionally hidden from desktop nav — route still exists
+    // { label: "Play", path: "/play" },
   ];
 
   const isActivePath = (path: string) => location.pathname === path;
